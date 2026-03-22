@@ -1,0 +1,27 @@
+# Django core
+django>=4.2,<5.0
+djangorestframework
+django-cors-headers
+whitenoise
+gunicorn
+
+# AI — LLM
+google-genai
+
+# OCR
+pytesseract
+Pillow
+opencv-python-headless
+numpy
+
+# Audio
+openai-whisper
+
+# URL analysis
+requests
+beautifulsoup4
+newspaper3k
+python-whois
+
+# Utilities
+python-dotenv

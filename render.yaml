@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: mindshield-ai
+    env: python
+    buildCommand: |
+      apt-get install -y tesseract-ocr ffmpeg
+      pip install -r requirements.txt
+      python manage.py migrate
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn MindShieldAI.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"

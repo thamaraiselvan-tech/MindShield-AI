@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.egg-info/
+
+# Django
+db.sqlite3
+staticfiles/
+media/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Whisper / ML models
+*.pt
+*.bin
+
+# Temp files
+*.tmp
+*.log
