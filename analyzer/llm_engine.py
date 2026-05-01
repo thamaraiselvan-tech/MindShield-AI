@@ -90,11 +90,11 @@ def build_prompt(text):
         )
 
     return (
-        "You are MindShield AI — a security analysis system.\n"
+        "You are MindShield AI — an expert security analysis system.\n"
         "You MUST respond with ONLY a valid JSON object. No other text.\n\n"
         + short_note +
         "Analyze the following content for:\n"
-        "1. Psychological manipulation (fear, urgency, false authority, gaslighting)\n"
+        "1. Psychological manipulation (fear, urgency, false authority, gaslighting, social proof, and any other factors)\n"
         "2. Fake or misleading information (misinformation, propaganda, scams)\n\n"
         "CONTENT:\n"
         f"\"{text}\"\n\n"
@@ -106,7 +106,7 @@ def build_prompt(text):
         "  \"credibility_status\": <\"Real\" or \"Fake\" or \"Uncertain\">,\n"
         "  \"risk_level\": <\"Low\" or \"Medium\" or \"High\">,\n"
         "  \"red_flags\": <array of specific red flags found, empty if none>,\n"
-        "  \"explanation\": <detailed explanation, minimum 2 sentences>\n"
+        "  \"explanation\": <detailed explanation on why the content is flagged/not flagged and whether to trust it/open it or not, minimum 2 sentences>\n"
         "}"
     )
 

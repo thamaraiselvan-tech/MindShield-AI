@@ -8,606 +8,715 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-/* =======================================
-   DESIGN SYSTEM — MINDSHIELD CYBERPUNK
-   ======================================= */
+/* ================================================
+   DESIGN SYSTEM
+   ================================================ */
 :root {
-  --bg-void:        #00060f;
-  --bg-deep:        #020c1b;
-  --bg-surface:     #071428;
-  --bg-card:        #0a1e38;
-  --bg-input:       #081020;
-  --accent-core:    #00c8ff;
-  --accent-glow:    #0af;
-  --accent-warn:    #ff4d4d;
-  --accent-ok:      #00ffaa;
-  --accent-gold:    #ffc857;
-  --border-faint:   rgba(0, 200, 255, 0.12);
-  --border-mid:     rgba(0, 200, 255, 0.30);
-  --border-bright:  rgba(0, 200, 255, 0.65);
-  --text-primary:   #e0f4ff;
-  --text-secondary: #7bacc8;
-  --text-muted:     #3d6a88;
-  --scan-line:      repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,200,255,0.025) 2px,
-    rgba(0,200,255,0.025) 4px
+  --bg-void:       #00060f;
+  --bg-deep:       #020c1b;
+  --bg-surface:    #060f1e;
+  --bg-card:       #08152a;
+  --bg-card2:      #0b1c35;
+  --bg-input:      #050e1c;
+  --accent:        #00c8ff;
+  --accent-dim:    rgba(0,200,255,0.55);
+  --accent-glow:   #0af;
+  --ok:            #00ffaa;
+  --warn:          #ffc857;
+  --danger:        #ff4d4d;
+  --b-faint:       rgba(0,200,255,0.10);
+  --b-mid:         rgba(0,200,255,0.28);
+  --b-bright:      rgba(0,200,255,0.60);
+  --t-primary:     #dff3ff;
+  --t-secondary:   #6fa8c4;
+  --t-muted:       #2e5570;
+  --scan: repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,200,255,0.022) 2px,rgba(0,200,255,0.022) 4px
   );
 }
 
-/* ---- Reset & Base ---- */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
 body {
-  font-family: 'Exo 2', sans-serif;
-  background: var(--bg-void);
-  color: var(--text-primary);
-  overflow-x: hidden;
-  min-height: 100vh;
+  font-family:'Exo 2',sans-serif;
+  background:var(--bg-void);
+  color:var(--t-primary);
+  overflow-x:hidden;
+  min-height:100vh;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,120,200,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 90% 80%, rgba(0,80,180,0.10) 0%, transparent 60%);
+    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(0,110,200,0.16) 0%,transparent 70%),
+    radial-gradient(ellipse 35% 35% at 92% 85%, rgba(0,60,160,0.10) 0%,transparent 60%);
 }
 
-/* ---- Particles ---- */
-#particles-js {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0; left: 0;
-  z-index: -1;
-}
-
-/* ---- Scanline overlay ---- */
 body::before {
-  content: "";
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--scan-line);
-  opacity: 0.6;
+  content:"";pointer-events:none;
+  position:fixed;inset:0;z-index:9999;
+  background:var(--scan);opacity:0.5;
 }
 
-/* ============================
+#particles-js {
+  position:fixed;width:100%;height:100%;top:0;left:0;z-index:-1;
+}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg-void);}
+::-webkit-scrollbar-thumb{background:var(--b-mid);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+::selection{background:rgba(0,200,255,0.22);color:#fff;}
+
+/* ================================================
    HEADER
-   ============================ */
+   ================================================ */
 .header {
-  position: relative;
-  display: flex;
-  align-items: center;
+  text-align: center;
+  position:relative;
+  display:flex;
   justify-content: center;
-  gap: 20px;
-  padding: 0 40px;
-  height: 80px;
-  background: linear-gradient(90deg, #000d1a 0%, #01111f 60%, #000a16 100%);
-  border-bottom: 1px solid var(--border-bright);
-  box-shadow:
-    0 1px 0 rgba(0,200,255,0.08),
-    0 4px 40px rgba(0,150,255,0.12);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  overflow: hidden;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 40px;
+  height:72px;
+  background:linear-gradient(90deg,#000d1c,#010f1e 60%,#00090f);
+  border-bottom:1px solid var(--b-bright);
+  overflow:hidden;
+  z-index:100;
 }
 
-/* animated header sweep */
-.header::after {
-  content: "";
-  position: absolute;
-  top: 0; left: -60%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.06), transparent);
-  animation: headerSweep 4s ease-in-out infinite;
-}
-
-@keyframes headerSweep {
-  0%   { left: -60%; }
-  100% { left: 130%; }
-}
-
-/* corner accent */
-.header::before {
-  content: "";
-  position: absolute;
-  bottom: -1px; left: 0;
-  width: 200px; height: 2px;
-  background: linear-gradient(90deg, var(--accent-core), transparent);
-  animation: cornerPulse 3s ease-in-out infinite alternate;
-}
-
-@keyframes cornerPulse {
-  from { opacity: 0.6; width: 200px; }
-  to   { opacity: 1.0; width: 340px; }
+.header-left {
+  display:flex;align-items:center;gap:16px;
 }
 
 .header img {
-  height: 52px;
-  width: auto;
-  flex-shrink: 0;
-  float: left;
-  filter: drop-shadow(0 0 10px rgba(0,200,255,0.5));
-  animation: logoPulse 4s ease-in-out infinite alternate;
+  text-align: center;
+  height:44px;width:auto;flex-shrink:0;
+  filter:drop-shadow(0 0 10px rgba(0,200,255,0.55));
+  animation:logoPulse 4s ease-in-out infinite alternate;
 }
 
 @keyframes logoPulse {
-  from { filter: drop-shadow(0 0 6px rgba(0,200,255,0.4)); }
-  to   { filter: drop-shadow(0 0 18px rgba(0,200,255,0.9)); }
+  from{filter:drop-shadow(0 0 5px rgba(0,200,255,0.4));}
+  to  {filter:drop-shadow(0 0 18px rgba(0,200,255,0.95));}
 }
 
-/* header text glow */
-.header span, .header > *:not(img) {
-  background: linear-gradient(90deg, #e0f4ff, #00c8ff, #e0f4ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.header-title {
+  font-family:'Orbitron',sans-serif;
+  font-size:15px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;
+  background:linear-gradient(90deg,#e0f4ff,#00c8ff,#e0f4ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 
-/* ============================
-   CONTAINER
-   ============================ */
-.container {
-  width: min(760px, 94vw);
-  margin: 48px auto 60px;
-  padding: 40px 44px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-mid);
-  border-radius: 4px;
-  position: relative;
-  animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1);
-  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+.header-subtitle {
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--t-muted);text-transform:uppercase;
+  margin-top:2px;
 }
 
-/* top-right corner clip accent */
-.container::before {
-  content: "";
-  position: absolute;
-  top: 0; right: 0;
-  width: 48px; height: 48px;
-  border-top: 2px solid var(--accent-core);
-  border-right: 2px solid var(--accent-core);
-  border-radius: 0;
-  pointer-events: none;
+/* status pill */
+.status-pill {
+  display:flex;align-items:center;gap:8px;
+  padding:6px 14px;
+  border:1px solid var(--b-mid);border-radius:20px;
+  background:rgba(0,200,255,0.04);
+  font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;color:var(--t-secondary);text-transform:uppercase;
+}
+.status-dot {
+  width:7px;height:7px;border-radius:50%;
+  background:var(--ok);
+  box-shadow:0 0 8px var(--ok);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{
+  0%,100%{opacity:1;}50%{opacity:0.4;}
 }
 
-/* subtle inner glow */
-.container::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 4px;
-  background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(0,150,255,0.06) 0%, transparent 70%);
-  pointer-events: none;
+.header::after {
+  content:"";position:absolute;top:0;left:-50%;width:35%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.05),transparent);
+  animation:hdrSweep 5s ease-in-out infinite;
+}
+@keyframes hdrSweep{0%{left:-50%;}100%{left:130%;}}
+
+.header::before {
+  content:"";position:absolute;bottom:-1px;left:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  animation:hdrLine 3s ease-in-out infinite alternate;
+}
+@keyframes hdrLine{from{width:160px;opacity:.6;}to{width:320px;opacity:1;}}
+
+/* ================================================
+   PAGE LAYOUT
+   ================================================ */
+.page {
+  max-width:1200px;
+  margin:0 auto;
+  padding:32px 28px 60px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto;
+  gap:24px;
 }
 
-/* ============================
-   SECTIONS & LABELS
-   ============================ */
-.section {
-  margin-bottom: 26px;
-  position: relative;
+/* ================================================
+   CARD BASE
+   ================================================ */
+.card {
+  background:var(--bg-card);
+  border:1px solid var(--b-mid);
+  border-radius:4px;
+  position:relative;
+  overflow:hidden;
+  animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both;
 }
 
+.card::after {
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent 70%);
+}
+
+/* chamfered corner */
+.card-chamfer {
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
+}
+.card-chamfer::before {
+  content:"";position:absolute;
+  top:0;right:0;width:40px;height:40px;
+  border-top:1px solid var(--accent);
+  border-right:1px solid var(--accent);
+  pointer-events:none;z-index:1;
+}
+
+.card-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px 14px;
+  border-bottom:1px solid var(--b-faint);
+}
+
+.card-title {
+  font-family:'Orbitron',sans-serif;
+  font-size:11px;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--accent);
+}
+
+.card-tag {
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--t-muted);text-transform:uppercase;
+}
+
+.card-body {
+  padding:20px 22px;
+}
+
+/* stagger animations */
+.card:nth-child(1){animation-delay:.05s;}
+.card:nth-child(2){animation-delay:.12s;}
+.card:nth-child(3){animation-delay:.18s;}
+.card:nth-child(4){animation-delay:.22s;}
+.card:nth-child(5){animation-delay:.28s;}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(22px);}
+  to  {opacity:1;transform:translateY(0);}
+}
+
+/* ================================================
+   GRID LAYOUT ASSIGNMENTS
+   ================================================ */
+.card-text      { grid-column:1; grid-row:1; }
+.card-media     { grid-column:2; grid-row:1; }
+.card-url       { grid-column:1 / span 2; grid-row:2; }
+.card-action    { grid-column:1 / span 2; grid-row:3; }
+.card-results   { grid-column:1 / span 2; grid-row:4; }
+
+/* ================================================
+   LABELS
+   ================================================ */
 label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent-core);
-  font-family: 'Space Mono', monospace;
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;
+  font-size:10px;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);
+  font-family:'Space Mono',monospace;
 }
-
 label::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 12px;
-  background: var(--accent-core);
-  border-radius: 1px;
-  box-shadow: 0 0 6px var(--accent-glow);
+  content:"";display:inline-block;
+  width:2px;height:11px;
+  background:var(--accent);border-radius:1px;
+  box-shadow:0 0 5px var(--accent-glow);
 }
 
-/* ============================
+/* ================================================
    INPUTS
-   ============================ */
+   ================================================ */
 textarea,
 input[type="text"],
 input[type="file"] {
-  width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-mid);
-  border-radius: 3px;
-  color: var(--text-primary);
-  font-family: 'Space Mono', monospace;
-  font-size: 13px;
-  outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s;
-  padding: 13px 16px;
+  width:100%;
+  background:var(--bg-input);
+  border:1px solid var(--b-mid);
+  border-radius:3px;
+  color:var(--t-primary);
+  font-family:'Space Mono',monospace;
+  font-size:12px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  padding:12px 14px;
 }
 
 textarea {
-  height: 130px;
-  resize: none;
-  line-height: 1.7;
+  height:120px;resize:none;line-height:1.75;
 }
 
-textarea::placeholder,
-input::placeholder {
-  color: var(--text-muted);
-  font-style: italic;
+textarea::placeholder,input::placeholder {
+  color:var(--t-muted);font-style:italic;
 }
 
-textarea:focus,
-input[type="text"]:focus,
-input[type="file"]:focus {
-  border-color: var(--accent-core);
-  box-shadow: 0 0 0 3px rgba(0,200,255,0.10), inset 0 0 20px rgba(0,200,255,0.04);
+textarea:focus,input[type="text"]:focus,input[type="file"]:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,200,255,0.09),inset 0 0 18px rgba(0,200,255,0.03);
 }
 
-textarea:hover,
-input[type="text"]:hover {
-  border-color: rgba(0,200,255,0.45);
+textarea:hover,input[type="text"]:hover { border-color:rgba(0,200,255,0.42); }
+
+/* ---- file upload styled zone ---- */
+.upload-zone {
+  position:relative;
+  border:1px dashed var(--b-mid);
+  border-radius:3px;
+  padding:22px 16px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+  background:var(--bg-input);
+  margin-bottom:16px;
+}
+.upload-zone:hover {
+  border-color:var(--accent);
+  background:rgba(0,200,255,0.03);
+}
+.upload-zone input[type="file"] {
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+  width:100%;height:100%;padding:0;border:none;background:none;
+}
+.upload-icon {
+  font-size:22px;margin-bottom:6px;
+  display:block;filter:drop-shadow(0 0 6px rgba(0,200,255,0.4));
+}
+.upload-label {
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:1.5px;
+  color:var(--t-secondary);text-transform:uppercase;
+}
+.upload-hint {
+  font-size:10px;color:var(--t-muted);margin-top:4px;
+  font-family:'Space Mono',monospace;
 }
 
-input[type="file"] {
-  cursor: pointer;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-secondary);
+/* URL row */
+.url-row {
+  display:flex;align-items:center;gap:12px;
+}
+.url-prefix {
+  font-family:'Space Mono',monospace;
+  font-size:11px;color:var(--t-muted);
+  letter-spacing:1px;white-space:nowrap;flex-shrink:0;
 }
 
-input[type="file"]::file-selector-button {
-  background: transparent;
-  border: 1px solid var(--border-mid);
-  border-radius: 2px;
-  color: var(--accent-core);
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  margin-right: 14px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-input[type="file"]::file-selector-button:hover {
-  background: rgba(0,200,255,0.08);
-  border-color: var(--accent-core);
-}
-
-/* ============================
+/* ================================================
    BUTTON
-   ============================ */
+   ================================================ */
 button {
-  width: 100%;
-  padding: 15px 24px;
-  background: transparent;
-  border: 1px solid var(--accent-core);
-  border-radius: 3px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--accent-core);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: color 0.3s, box-shadow 0.3s;
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  width:100%;padding:16px 24px;
+  background:transparent;
+  border:1px solid var(--accent);
+  border-radius:3px;
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;
+  color:var(--accent);cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:color .3s,box-shadow .3s;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
 }
-
 button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.12), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.5s ease;
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.14),transparent);
+  transform:translateX(-100%);transition:transform .5s ease;
 }
-
-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,200,255,0);
-  transition: background 0.3s;
-}
-
 button:hover {
-  color: #ffffff;
-  box-shadow: 0 0 24px rgba(0,200,255,0.35), inset 0 0 20px rgba(0,200,255,0.08);
+  color:#fff;
+  box-shadow:0 0 28px rgba(0,200,255,0.35),inset 0 0 20px rgba(0,200,255,0.07);
 }
+button:hover::before { transform:translateX(200%);transition:transform .8s ease; }
+button:active { transform:scale(0.99); }
 
-button:hover::before {
-  transform: translateX(200%);
-  transition: transform 0.7s ease;
-}
-
-button:hover::after {
-  background: rgba(0,200,255,0.06);
-}
-
-button:active {
-  transform: scale(0.99);
-}
-
-/* ============================
-   LOADING
-   ============================ */
+/* ================================================
+   LOADING BAR
+   ================================================ */
 .loading {
-  margin-top: 14px;
-  font-size: 11px;
-  font-family: 'Space Mono', monospace;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent-core);
-  font-weight: 700;
-  display: none;
-  position: relative;
-  overflow: hidden;
-  padding: 10px 16px;
-  background: rgba(0,200,255,0.05);
-  border-left: 2px solid var(--accent-core);
-  border-radius: 0 3px 3px 0;
+  margin-top:14px;display:none;
+  font-size:10px;font-family:'Space Mono',monospace;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);font-weight:700;
+  position:relative;overflow:hidden;
+  padding:10px 16px;
+  background:rgba(0,200,255,0.04);
+  border-left:2px solid var(--accent);border-radius:0 3px 3px 0;
 }
-
 .scanning::after {
-  content: "";
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.35), transparent);
-  animation: scan 1.6s linear infinite;
+  content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.35),transparent);
+  animation:scan 1.6s linear infinite;
+}
+@keyframes scan{100%{left:100%;}}
+
+/* ================================================
+   RESULTS — STAT BADGES
+   ================================================ */
+.results-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:14px;
+  margin-bottom:22px;
 }
 
-@keyframes scan {
-  100% { left: 100%; }
+.stat-badge {
+  background:var(--bg-surface);
+  border:1px solid var(--b-faint);
+  border-radius:3px;
+  padding:16px 18px;
+  position:relative;overflow:hidden;
+}
+.stat-badge::before {
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent 60%);
+}
+.stat-badge-label {
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--t-muted);
+  margin-bottom:8px;
+}
+.stat-badge-value {
+  font-family:'Orbitron',sans-serif;
+  font-size:18px;font-weight:700;
+  color:var(--t-primary);
+  line-height:1.1;
+}
+.stat-badge-value.ok     { color:var(--ok); text-shadow:0 0 12px rgba(0,255,170,0.4); }
+.stat-badge-value.warn   { color:var(--warn); text-shadow:0 0 12px rgba(255,200,87,0.4); }
+.stat-badge-value.danger { color:var(--danger); text-shadow:0 0 12px rgba(255,77,77,0.4); }
+
+/* ================================================
+   RESULTS — BOTTOM SPLIT
+   ================================================ */
+.results-bottom {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
 }
 
-/* ============================
-   RESULT CARD
-   ============================ */
-.result-card {
-  margin-top: 38px;
-  padding: 28px 30px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-mid);
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
+/* gauge panel */
+.gauge-panel {
+  background:var(--bg-surface);
+  border:1px solid var(--b-faint);
+  border-radius:3px;
+  padding:20px 16px 14px;
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;overflow:hidden;
+}
+.gauge-panel::before {
+  content:"RISK METER";
+  position:absolute;top:12px;left:16px;
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:2.5px;color:var(--t-muted);text-transform:uppercase;
 }
 
-/* top accent stripe */
-.result-card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-core), transparent 70%);
+/* explanation + triggers panel */
+.info-panel {
+  display:flex;flex-direction:column;gap:14px;
 }
 
-.result-card::after {
-  content: "ANALYSIS REPORT";
-  position: absolute;
-  top: 12px; right: 18px;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 3px;
-  color: var(--text-muted);
+.info-block {
+  background:var(--bg-surface);
+  border:1px solid var(--b-faint);
+  border-radius:3px;
+  padding:16px 18px;
+  flex:1;position:relative;overflow:hidden;
+}
+.info-block::before {
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--accent-dim),transparent 60%);
+}
+.info-block-label {
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--t-muted);
+  margin-bottom:10px;
+}
+.info-block-value {
+  font-family:'Space Mono',monospace;
+  font-size:12px;line-height:1.75;
+  color:var(--t-secondary);
 }
 
-.result-card h3 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--text-primary);
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-faint);
-  text-transform: uppercase;
+/* triggers chips */
+.trigger-chips {
+  display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;
+}
+.chip {
+  padding:3px 10px;
+  border:1px solid rgba(255,200,87,0.35);
+  border-radius:2px;
+  background:rgba(255,200,87,0.06);
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:1px;
+  color:var(--warn);text-transform:uppercase;
 }
 
-.result-card p {
-  margin: 10px 0;
-  font-size: 13px;
-  font-family: 'Space Mono', monospace;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.result-card p strong {
-  color: var(--accent-core);
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-.result-card span {
-  color: var(--text-primary);
-}
-
-/* URL details sub-section */
+/* ================================================
+   URL DETAILS PANEL
+   ================================================ */
 #urlDetails {
-  margin-top: 20px;
-  padding: 18px;
-  background: rgba(0,10,28,0.6);
-  border: 1px solid var(--border-faint);
-  border-radius: 3px;
+  display:none;
+  margin-top:16px;
+  background:var(--bg-surface);
+  border:1px solid var(--b-faint);
+  border-radius:3px;
+  overflow:hidden;
 }
-
 #urlDetails h4 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent-gold);
-  margin-bottom: 14px;
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--warn);
+  padding:12px 18px;
+  border-bottom:1px solid var(--b-faint);
+  background:rgba(255,200,87,0.04);
+}
+.url-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;
+}
+.url-row-item {
+  padding:10px 18px;
+  border-bottom:1px solid var(--b-faint);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+}
+.url-row-item:nth-child(odd){ background:rgba(0,200,255,0.015); }
+.url-key {
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--t-muted);
+  flex-shrink:0;
+}
+.url-val {
+  font-family:'Space Mono',monospace;font-size:11px;
+  color:var(--t-primary);text-align:right;word-break:break-all;
 }
 
-/* Explanation box */
-.explanation {
-  margin-top: 16px;
-  padding: 16px 18px;
-  background: rgba(0,200,255,0.04);
-  border-left: 2px solid rgba(0,200,255,0.3);
-  border-radius: 0 3px 3px 0;
-  font-size: 13px;
-  font-family: 'Space Mono', monospace;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  white-space: pre-wrap;
-}
+/* ================================================
+   RESULT SCORE heading (hidden — replaced by badges)
+   ================================================ */
+#score { display:none; }
 
-/* Canvas gauge */
+/* canvas */
 #riskGauge {
-  display: block;
-  margin: 28px auto 4px;
-  filter: drop-shadow(0 0 18px rgba(0,200,255,0.18));
+  display:block;margin:8px auto 0;
+  filter:drop-shadow(0 0 16px rgba(0,200,255,0.18));
 }
 
-/* ============================
+/* ================================================
    FOOTER
-   ============================ */
+   ================================================ */
 .footer-note {
-  margin-top: 24px;
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  text-align: center;
-  text-transform: uppercase;
-}
-
-/* ============================
-   ANIMATIONS
-   ============================ */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ============================
-   SCROLLBAR
-   ============================ */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--bg-void); }
-::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-core); }
-
-/* ============================
-   SELECTION
-   ============================ */
-::selection {
-  background: rgba(0,200,255,0.25);
-  color: #fff;
+  grid-column:1 / span 2;
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:1.5px;
+  color:var(--t-muted);text-align:center;text-transform:uppercase;
+  padding-top:8px;
 }
 </style>
 </head>
 <body>
 
-<!-- ------------------- Header with Logo ------------------- -->
+<!-- ======================== HEADER ======================== -->
 <div class="header">
-<img src="logo.png" alt="MindShield AI Logo">
-<span>MindShield AI – Cognitive Manipulation Detection System</span>
+  <div class="header-left">
+    <img src="logo.png" alt="MindShield AI Logo">
+    <div>
+      <div class="header-title">MindShield AI</div>
+      <div class="header-subtitle">Cognitive Manipulation Detection System</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    System Online
+  </div>
 </div>
 
-<!-- ------------------- Main Container ------------------- -->
-<div class="container">
+<!-- ======================== PAGE GRID ======================== -->
+<div class="page">
 
-<!-- Text input -->
-<div class="section">
-<label>Enter Text Message</label>
-<textarea id="textInput" placeholder="Paste or type the message to analyze..."></textarea>
-</div>
-
-<!-- Image input -->
-<div class="section">
-<label>Upload Image</label>
-<input type="file" id="imageInput" accept="image/*">
-</div>
-
-<!-- Audio input -->
-<div class="section">
-<label>Upload Audio</label>
-<input type="file" id="audioInput" accept="audio/*">
-</div>
-
-<!-- URL input -->
-<div class="section">
-<label>Enter URL</label>
-<input type="text" id="urlInput" placeholder="Paste the URL to analyze...">
-</div>
-
-<!-- Analyze button -->
-<div class="section">
-<button onclick="analyzeMessage()">Analyze Message</button>
-<div class="loading scanning" id="loading">AI analyzing content...</div>
-</div>
-
-<!-- Results -->
-<div class="result-card card">
-  <h3 id="score">Manipulation Risk Score: --%</h3>
-  <p><strong>Risk Level:</strong> <span id="riskLevel">--</span></p>
-  <p><strong>Detected Psychological Triggers:</strong> <span id="triggers">--</span></p>
-  <div class="explanation" id="explanation">Explanation will appear here.</div>
-
-  <!-- URL-specific details -->
-  <div id="urlDetails" style="display:none; margin-top:15px;">
-    <h4>URL Analysis</h4>
-    <p><strong>Domain:</strong> <span id="domain">--</span></p>
-    <p><strong>HTTPS:</strong> <span id="httpsStatus">--</span></p>
-    <p><strong>Trusted Domain:</strong> <span id="trustedDomain">--</span></p>
-    <p><strong>Suspicious TLD:</strong> <span id="suspiciousTLD">--</span></p>
-    <p><strong>URL Structure Flags:</strong> <span id="urlFlags">--</span></p>
-    <p><strong>Final Risk Score:</strong> <span id="finalScore">--</span></p>
-    <p><strong>Final Risk Level:</strong> <span id="finalLevel">--</span></p>
-    <p><strong>Extraction Method:</strong> <span id="extractionMethod">--</span></p>
-    <p><strong>Extraction Status:</strong> <span id="extractionStatus">--</span></p>
+  <!-- ── Card 1: Text Input ── -->
+  <div class="card card-chamfer card-text">
+    <div class="card-header">
+      <div class="card-title">Text Analysis</div>
+      <div class="card-tag">Input · 01</div>
+    </div>
+    <div class="card-body">
+      <label>Message Content</label>
+      <textarea id="textInput" placeholder="Paste or type the message to analyze..."></textarea>
+    </div>
   </div>
 
-  <!-- Speedometer gauge -->
-  <canvas id="riskGauge" width="340" height="200" style="margin-top:10px;"></canvas>
-</div>
+  <!-- ── Card 2: Media Inputs ── -->
+  <div class="card card-chamfer card-media">
+    <div class="card-header">
+      <div class="card-title">Media Upload</div>
+      <div class="card-tag">Input · 02</div>
+    </div>
+    <div class="card-body">
+      <label>Image File</label>
+      <div class="upload-zone">
+        <input type="file" id="imageInput" accept="image/*">
+        <span class="upload-icon">🖼</span>
+        <div class="upload-label">Drop image or click to browse</div>
+        <div class="upload-hint">PNG, JPG, WEBP supported</div>
+      </div>
 
-<div class="footer-note">
-*Note: The result is advisory. The final decision is up to the user.
-</div>
+      <label>Audio File</label>
+      <div class="upload-zone">
+        <input type="file" id="audioInput" accept="audio/*">
+        <span class="upload-icon">🎙</span>
+        <div class="upload-label">Drop audio or click to browse</div>
+        <div class="upload-hint">MP3, WAV, M4A supported</div>
+      </div>
+    </div>
+  </div>
 
-</div>
+  <!-- ── Card 3: URL Input ── -->
+  <div class="card card-url">
+    <div class="card-header">
+      <div class="card-title">URL Inspection</div>
+      <div class="card-tag">Input · 03</div>
+    </div>
+    <div class="card-body">
+      <label>Target URL</label>
+      <div class="url-row">
+        <span class="url-prefix">https://</span>
+        <input type="text" id="urlInput" placeholder="Paste the full URL to inspect domain, HTTPS, structure flags...">
+      </div>
+    </div>
+  </div>
 
-<!-- ------------------- Particles Background ------------------- -->
+  <!-- ── Card 4: Action ── -->
+  <div class="card card-action">
+    <div class="card-body">
+      <button onclick="analyzeMessage()">⬡ &nbsp; Run Cognitive Threat Analysis</button>
+      <div class="loading scanning" id="loading">Neural engine scanning content — please wait...</div>
+    </div>
+  </div>
+
+  <!-- ── Card 5: Results ── -->
+  <div class="card card-results">
+    <div class="card-header">
+      <div class="card-title">Analysis Report</div>
+      <div class="card-tag">Output · Live</div>
+    </div>
+    <div class="card-body">
+
+      <!-- hidden original h3 (JS writes to it; badges read from it) -->
+      <h3 id="score" style="display:none;">Manipulation Risk Score: --%</h3>
+
+      <!-- Stat badges row -->
+      <div class="results-grid">
+        <div class="stat-badge">
+          <div class="stat-badge-label">Risk Score</div>
+          <div class="stat-badge-value" id="badgeScore">--%</div>
+        </div>
+        <div class="stat-badge">
+          <div class="stat-badge-label">Risk Level</div>
+          <div class="stat-badge-value" id="riskLevel">--</div>
+        </div>
+        <div class="stat-badge">
+          <div class="stat-badge-label">Threats Detected</div>
+          <div class="stat-badge-value" id="threatCount">--</div>
+        </div>
+      </div>
+
+      <!-- Bottom split: gauge + info -->
+      <div class="results-bottom">
+
+        <!-- Gauge -->
+        <div class="gauge-panel">
+          <canvas id="riskGauge" width="300" height="180"></canvas>
+        </div>
+
+        <!-- Info panels -->
+        <div class="info-panel">
+          <div class="info-block">
+            <div class="info-block-label">Psychological Triggers</div>
+            <div id="triggerArea">
+              <div class="trigger-chips" id="triggers">
+                <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--t-muted);">Awaiting analysis...</span>
+              </div>
+            </div>
+          </div>
+          <div class="info-block" style="flex:2;">
+            <div class="info-block-label">Explanation</div>
+            <div class="info-block-value" id="explanation">Analysis results will appear here after submission.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- URL Details -->
+      <div id="urlDetails">
+        <h4>URL Domain Analysis</h4>
+        <div class="url-grid">
+          <div class="url-row-item"><span class="url-key">Domain</span><span class="url-val" id="domain">--</span></div>
+          <div class="url-row-item"><span class="url-key">HTTPS</span><span class="url-val" id="httpsStatus">--</span></div>
+          <div class="url-row-item"><span class="url-key">Trusted Domain</span><span class="url-val" id="trustedDomain">--</span></div>
+          <div class="url-row-item"><span class="url-key">Suspicious TLD</span><span class="url-val" id="suspiciousTLD">--</span></div>
+          <div class="url-row-item"><span class="url-key">Structure Flags</span><span class="url-val" id="urlFlags">--</span></div>
+          <div class="url-row-item"><span class="url-key">Final Score</span><span class="url-val" id="finalScore">--</span></div>
+          <div class="url-row-item"><span class="url-key">Final Level</span><span class="url-val" id="finalLevel">--</span></div>
+          <div class="url-row-item"><span class="url-key">Extraction Method</span><span class="url-val" id="extractionMethod">--</span></div>
+          <div class="url-row-item" style="grid-column:1/span 2;"><span class="url-key">Extraction Status</span><span class="url-val" id="extractionStatus">--</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-note">
+    * Advisory output only — final judgment remains with the user. v2.0 · MindShield AI
+  </div>
+
+</div><!-- end .page -->
+
+<!-- Particles -->
 <div id="particles-js"></div>
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
 <script>
 tsParticles.load("particles-js",{
-    particles:{
-        number:{value:60},
-        color:{value:"#3b82f6"},
-        links:{enable:true,color:"#3b82f6",opacity:0.3},
-        move:{enable:true,speed:1},
-        size:{value:2}
-    },
-    background:{color:"#020617"}
+  particles:{
+    number:{value:55},
+    color:{value:"#3b82f6"},
+    links:{enable:true,color:"#3b82f6",opacity:0.25},
+    move:{enable:true,speed:.9},
+    size:{value:1.8}
+  },
+  background:{color:"#00060f"}
 });
 </script>
 
-<!-- ------------------- Main JS ------------------- -->
+<!-- ======================== MAIN JS (unchanged logic) ======================== -->
 <script>
 async function analyzeMessage() {
     const text = document.getElementById("textInput").value;
@@ -621,13 +730,18 @@ async function analyzeMessage() {
     if (image) formData.append("image", image);
     if (audio) formData.append("audio", audio);
 
-    // show loading
     document.getElementById("loading").style.display = "block";
     document.getElementById("score").innerText = "Manipulation Risk Score: --%";
     document.getElementById("riskLevel").innerText = "--";
     document.getElementById("triggers").innerText = "--";
     document.getElementById("explanation").innerText = "";
-    document.getElementById("urlDetails").style.display = "none"; // hide URL details by default
+    document.getElementById("urlDetails").style.display = "none";
+
+    // reset badges
+    document.getElementById("badgeScore").innerText = "--%";
+    document.getElementById("badgeScore").className = "stat-badge-value";
+    document.getElementById("riskLevel").className = "stat-badge-value";
+    document.getElementById("threatCount").innerText = "--";
 
     try {
         const response = await fetch("http://127.0.0.1:8000/analyze/", {
@@ -638,13 +752,34 @@ async function analyzeMessage() {
 
         const prob = data.fake_probability ?? 0;
         document.getElementById("score").innerText = "Manipulation Risk Score: " + prob + "%";
-        document.getElementById("riskLevel").innerText = data.risk_level ?? "Unknown";
-        document.getElementById("triggers").innerText = (data.manipulation_type ?? []).join(", ") || "--";
+
+        // update badge score
+        const badgeScore = document.getElementById("badgeScore");
+        badgeScore.innerText = prob + "%";
+        badgeScore.className = "stat-badge-value " + (prob < 35 ? "ok" : prob < 65 ? "warn" : "danger");
+
+        // risk level badge
+        const rlEl = document.getElementById("riskLevel");
+        rlEl.innerText = data.risk_level ?? "Unknown";
+        const rl = (data.risk_level ?? "").toLowerCase();
+        rlEl.className = "stat-badge-value " + (rl.includes("low") ? "ok" : rl.includes("mod") ? "warn" : rl.includes("high") ? "danger" : "");
+
+        // triggers as chips
+        const triggerList = data.manipulation_type ?? [];
+        document.getElementById("threatCount").innerText = triggerList.length || 0;
+        const trigsEl = document.getElementById("triggers");
+        if (triggerList.length) {
+            trigsEl.innerHTML = triggerList.map(t =>
+                `<span class="chip">${t}</span>`
+            ).join("");
+        } else {
+            trigsEl.innerHTML = `<span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--t-muted);">None detected</span>`;
+        }
+
         document.getElementById("explanation").innerText = data.explanation ?? "No explanation available.";
 
         drawGauge(prob);
 
-        // ----------------- URL analysis -----------------
         if (data.input_type === "url") {
             document.getElementById("urlDetails").style.display = "block";
             const d = data.domain_analysis ?? {};
@@ -652,7 +787,7 @@ async function analyzeMessage() {
             document.getElementById("httpsStatus").innerText = d.is_https ? "Yes" : "No";
             document.getElementById("trustedDomain").innerText = d.trusted_domain ? "Yes" : "No";
             document.getElementById("suspiciousTLD").innerText = d.suspicious_tld ? "Yes" : "No";
-            document.getElementById("urlFlags").innerText = (data.url_structure_flags ?? ["None"]).length ? (data.url_structure_flags).join(", ") : "None";
+            document.getElementById("urlFlags").innerText = (data.url_structure_flags ?? []).join(", ") || "None";
             document.getElementById("finalScore").innerText = data.final_risk_score ?? "--";
             document.getElementById("finalLevel").innerText = data.final_risk_level ?? "--";
             document.getElementById("extractionMethod").innerText = data.extraction_method ?? "--";
@@ -661,148 +796,92 @@ async function analyzeMessage() {
 
     } catch (err) {
         document.getElementById("score").innerText = "Error connecting to backend";
+        document.getElementById("badgeScore").innerText = "ERR";
         document.getElementById("riskLevel").innerText = "--";
-        document.getElementById("triggers").innerText = "--";
+        document.getElementById("triggers").innerHTML = `<span style="color:var(--danger);font-family:'Space Mono',monospace;font-size:11px;">Backend unreachable</span>`;
         document.getElementById("explanation").innerText = "";
     } finally {
         document.getElementById("loading").style.display = "none";
     }
 }
 
-// ------------------- Risk Gauge (Speedometer) -------------------
+// ---- Speedometer Gauge (unchanged) ----
 function drawGauge(value) {
     const canvas = document.getElementById("riskGauge");
     const ctx = canvas.getContext("2d");
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
-    const cx = W / 2, cy = H - 28;
-    const R = 130, trackW = 18;
-    const startA = Math.PI, endA = 2 * Math.PI; // left to right half arc
+    const cx = W / 2, cy = H - 20;
+    const R = 110, trackW = 16;
+    const startA = Math.PI, endA = 2 * Math.PI;
     const valueA = startA + (value / 100) * Math.PI;
-
-    // --- color for value ---
     const color = value < 35 ? "#00ffaa" : value < 65 ? "#ffc857" : "#ff4d4d";
 
-    // --- tick marks ---
+    // tick marks
     for (let i = 0; i <= 10; i++) {
         const a = startA + (i / 10) * Math.PI;
         const isMajor = i % 2 === 0;
-        const r1 = R + trackW + 6;
-        const r2 = r1 + (isMajor ? 12 : 7);
+        const r1 = R + trackW + 5;
+        const r2 = r1 + (isMajor ? 10 : 6);
         ctx.beginPath();
         ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
         ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
-        ctx.strokeStyle = isMajor ? "rgba(0,200,255,0.7)" : "rgba(0,200,255,0.3)";
+        ctx.strokeStyle = isMajor ? "rgba(0,200,255,0.7)" : "rgba(0,200,255,0.28)";
         ctx.lineWidth = isMajor ? 2 : 1;
         ctx.stroke();
     }
 
-    // --- tick labels: 0, 25, 50, 75, 100 ---
-    const labelData = [
-        { pct: 0,   label: "0"   },
-        { pct: 25,  label: "25"  },
-        { pct: 50,  label: "50"  },
-        { pct: 75,  label: "75"  },
-        { pct: 100, label: "100" },
-    ];
-    ctx.font = "600 10px 'Exo 2', sans-serif";
-    ctx.fillStyle = "rgba(0,200,255,0.55)";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    labelData.forEach(({ pct, label }) => {
+    // labels
+    [{pct:0,l:"0"},{pct:25,l:"25"},{pct:50,l:"50"},{pct:75,l:"75"},{pct:100,l:"100"}].forEach(({pct,l})=>{
         const a = startA + (pct / 100) * Math.PI;
-        const lr = R + trackW + 26;
-        ctx.fillText(label, cx + Math.cos(a) * lr, cy + Math.sin(a) * lr);
+        const lr = R + trackW + 22;
+        ctx.font = "600 9px 'Exo 2',sans-serif";
+        ctx.fillStyle = "rgba(0,200,255,0.5)";
+        ctx.textAlign = "center";ctx.textBaseline = "middle";
+        ctx.fillText(l, cx + Math.cos(a)*lr, cy + Math.sin(a)*lr);
     });
 
-    // --- track background ---
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, startA, endA);
-    ctx.strokeStyle = "rgba(0,200,255,0.10)";
-    ctx.lineWidth = trackW;
-    ctx.lineCap = "round";
-    ctx.stroke();
+    // track bg
+    ctx.beginPath();ctx.arc(cx,cy,R,startA,endA);
+    ctx.strokeStyle="rgba(0,200,255,0.09)";ctx.lineWidth=trackW;ctx.lineCap="round";ctx.stroke();
 
-    // --- colored zone segments (low / mid / high) ---
-    const zones = [
-        { from: 0,  to: 35,  col: "rgba(0,255,170,0.18)"  },
-        { from: 35, to: 65,  col: "rgba(255,200,87,0.18)" },
-        { from: 65, to: 100, col: "rgba(255,77,77,0.18)"  },
-    ];
-    zones.forEach(z => {
-        ctx.beginPath();
-        ctx.arc(cx, cy, R, startA + (z.from / 100) * Math.PI, startA + (z.to / 100) * Math.PI);
-        ctx.strokeStyle = z.col;
-        ctx.lineWidth = trackW;
-        ctx.lineCap = "butt";
-        ctx.stroke();
+    // zones
+    [{from:0,to:35,col:"rgba(0,255,170,0.16)"},{from:35,to:65,col:"rgba(255,200,87,0.16)"},{from:65,to:100,col:"rgba(255,77,77,0.16)"}]
+    .forEach(z=>{
+        ctx.beginPath();ctx.arc(cx,cy,R,startA+(z.from/100)*Math.PI,startA+(z.to/100)*Math.PI);
+        ctx.strokeStyle=z.col;ctx.lineWidth=trackW;ctx.lineCap="butt";ctx.stroke();
     });
 
-    // --- value arc ---
-    if (value > 0) {
-        const grad = ctx.createLinearGradient(
-            cx + Math.cos(startA) * R, cy + Math.sin(startA) * R,
-            cx + Math.cos(valueA) * R,  cy + Math.sin(valueA) * R
-        );
-        grad.addColorStop(0, "#00ffaa");
-        grad.addColorStop(0.5, "#ffc857");
-        grad.addColorStop(1, "#ff4d4d");
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, R, startA, valueA);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = trackW;
-        ctx.lineCap = "round";
-        ctx.stroke();
+    // value arc
+    if(value>0){
+        const g=ctx.createLinearGradient(cx+Math.cos(startA)*R,cy+Math.sin(startA)*R,cx+Math.cos(valueA)*R,cy+Math.sin(valueA)*R);
+        g.addColorStop(0,"#00ffaa");g.addColorStop(.5,"#ffc857");g.addColorStop(1,"#ff4d4d");
+        ctx.beginPath();ctx.arc(cx,cy,R,startA,valueA);
+        ctx.strokeStyle=g;ctx.lineWidth=trackW;ctx.lineCap="round";ctx.stroke();
     }
 
-    // --- needle ---
-    const nA = startA + (value / 100) * Math.PI;
-    const nLen = R - 10, nBase = 14;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(nA);
-    ctx.beginPath();
-    ctx.moveTo(-nBase / 2 * Math.sin(0), nBase / 2 * Math.cos(0));
-    ctx.lineTo(nLen, 0);
-    ctx.lineTo(-nBase / 2 * Math.sin(0), -nBase / 2 * Math.cos(0));
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 12;
-    ctx.fill();
-    ctx.restore();
+    // needle
+    const nA=startA+(value/100)*Math.PI;
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(nA);
+    ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(R-8,0);ctx.lineTo(0,-6);ctx.closePath();
+    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=12;ctx.fill();ctx.restore();
 
-    // --- needle pivot ---
-    ctx.beginPath();
-    ctx.arc(cx, cy, 10, 0, Math.PI * 2);
-    ctx.fillStyle = "#0a1e38";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 10;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    // pivot
+    ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fillStyle="#08152a";ctx.shadowBlur=0;ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=10;ctx.fill();
+    ctx.shadowBlur=0;
 
-    // --- center value text ---
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
-    ctx.font = "bold 32px 'Orbitron', sans-serif";
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 16;
-    ctx.fillText(value + "%", cx, cy - 24);
-    ctx.shadowBlur = 0;
+    // value text
+    ctx.textAlign="center";ctx.textBaseline="alphabetic";
+    ctx.font="bold 28px 'Orbitron',sans-serif";
+    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=14;
+    ctx.fillText(value+"%",cx,cy-18);ctx.shadowBlur=0;
 
-    // --- risk label below value ---
-    const label = value < 35 ? "LOW RISK" : value < 65 ? "MODERATE" : "HIGH RISK";
-    ctx.font = "600 10px 'Exo 2', sans-serif";
-    ctx.fillStyle = "rgba(0,200,255,0.5)";
-    ctx.letterSpacing = "2px";
-    ctx.fillText(label, cx, cy - 8);
+    // label
+    const lbl=value<35?"LOW RISK":value<65?"MODERATE":"HIGH RISK";
+    ctx.font="600 9px 'Exo 2',sans-serif";ctx.fillStyle="rgba(0,200,255,0.5)";
+    ctx.fillText(lbl,cx,cy-5);
 }
 </script>
 </body>

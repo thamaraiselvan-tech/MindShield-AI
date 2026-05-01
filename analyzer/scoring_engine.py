@@ -33,9 +33,9 @@ SCAM_PATTERNS = [
     (r'\bact now\b',                                         12, "Urgency: 'act now'"),
     (r'\blimited (time|offer)\b',                            10, "Urgency: 'limited offer'"),
     (r'\bexpires? (soon|today)\b',                           10, "Urgency: expiry pressure"),
-    (r'\bimmediately\b',                                      8, "Urgency: 'immediately'"),
+    (r'\bimmediately\b',                                      10, "Urgency: 'immediately'"),
     (r'\blast chance\b',                                     10, "Urgency: 'last chance'"),
-    (r'\bdo not (ignore|delay)\b',                            8, "Urgency: ignore/delay warning"),
+    (r'\bdo not (ignore|delay)\b',                            10, "Urgency: ignore/delay warning"),
 
     # Fear triggers
     (r'\byour account.{0,20}(suspend|block|terminat)',       15, "Fear: account suspension threat"),
