@@ -1,6 +1,6 @@
 # MindShield AI - Detect Before you React
 
-MindShield is an AI-powered mental health and safety platform specially designed to **detect psychological manipulation** in digital media that provide users with a secure, supportive, and intelligent digital environment. The project focuses on improving user well-being through smart monitoring, personalized recommendations, and accessible resources.
+MindShield is an AI-powered mental health and safety platform specially designed to **"detect psychological manipulation"** in digital media that provide users with a secure, supportive, and intelligent digital environment. The project focuses on improving user well-being through smart monitoring, personalized recommendations, and accessible resources.
 
 ## Features
 
