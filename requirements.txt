@@ -1,13 +1,13 @@
 # Django core
-django>=4.2
-djangorestframework
-django-cors-headers
-whitenoise
+django>=4.2,<6.0
+djangorestframework>=3.15
+django-cors-headers>=4.3
+whitenoise>=6.7
 gunicorn
 
-# AI — LLM
-google-genai
-google-adk
+# AI — LLM & ADK
+google-genai>=1.0
+google-adk>=0.5
 
 # OCR
 pytesseract
@@ -15,8 +15,8 @@ Pillow
 opencv-python-headless
 numpy
 
-# Audio (optional — install separately if needed)
-# openai-whisper
+# Audio
+openai-whisper
 
 # URL analysis
 requests

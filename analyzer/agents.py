@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import asyncio
+import copy
+import uuid
 from dotenv import load_dotenv
 from google.adk import Agent
 from google.adk.runners import InMemoryRunner
@@ -139,16 +141,21 @@ explanation_shield_agent = Agent(
 # RUNNER UTILITIES
 # =====================================================================
 
-async def run_single_agent(agent: Agent, prompt: str, user_id: str = "default_user") -> str:
+async def run_single_agent(agent: Agent, prompt: str, user_id: str = None) -> str:
     """Helper to run a single agent with a prompt using InMemoryRunner with automatic rate-limit fallback."""
     global CURRENT_MODEL
+    if not user_id:
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        
     max_retries = 6
     
+    # Create local agent copy to prevent module-level singleton state mutation across requests
+    local_agent = copy.copy(agent)
+    
     for attempt in range(max_retries):
-        # Always align agent's model with the currently selected global model
-        agent.model = CURRENT_MODEL
+        local_agent.model = CURRENT_MODEL
         try:
-            runner = InMemoryRunner(agent=agent)
+            runner = InMemoryRunner(agent=local_agent)
             session = await runner.session_service.create_session(app_name=runner.app_name, user_id=user_id)
             
             new_message = types.Content(
@@ -184,7 +191,6 @@ async def run_single_agent(agent: Agent, prompt: str, user_id: str = "default_us
                     f"Transient API error / Quota hit on agent {agent.name}. "
                     f"Rotating global model to fallback: {CURRENT_MODEL}. Error: {e}"
                 )
-                # Brief sleep to cool off, then retry immediately with fallback model
                 await asyncio.sleep(1.5)
             else:
                 logger.error(f"Error executing agent {agent.name}: {e}")
@@ -251,12 +257,17 @@ def merge_tactics(llm_tactics, pattern_categories):
 # PIPELINE ORCHESTRATOR (Asynchronous Generator)
 # =====================================================================
 
-async def run_multi_agent_pipeline(text: str, input_type: str = "text", metadata: dict = None, user_id: str = "default_user"):
+async def run_multi_agent_pipeline(text: str, input_type: str = "text", metadata: dict = None, user_id: str = None):
     """
     Runs the raw text through the 4 specialized agents sequentially,
     yielding progress update dicts as each agent executes.
     """
-    logger.info("Starting Multi-Agent MindShield Pipeline.")
+    if not user_id:
+        user_id = f"session_{uuid.uuid4().hex[:12]}"
+    logger.info(f"Starting Multi-Agent MindShield Pipeline for user_id={user_id}.")
+    
+    # Bound prompt text length to prevent excessive token usage
+    text_bounded = text[:6000] if text else ""
     
     # -------------------------------------------------------------
     # STEP 1: Ingestion Agent
@@ -266,7 +277,7 @@ async def run_multi_agent_pipeline(text: str, input_type: str = "text", metadata
         "message": "Agent 1: Ingestion Agent is cleaning text and extracting metadata..."
     }
     
-    ingestion_prompt = f"Analyze and structure this input text:\n\n{text}"
+    ingestion_prompt = f"Analyze and structure this input text:\n\n{text_bounded}"
     raw_ingestion_res = await run_single_agent(ingestion_agent, ingestion_prompt, user_id)
     ingestion_data = parse_agent_json(raw_ingestion_res, {
         "cleaned_text": text,

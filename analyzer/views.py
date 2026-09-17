@@ -254,11 +254,17 @@ def generate_offline_fallback(text, input_type, metadata=None):
     # Run regex pattern detection
     pattern_score, scam_matches, pattern_cats = detect_scam_patterns(text)
     
-    # Since LLM is down, llm_score is 0, but we increase weight of pattern score
-    final_score = pattern_score
-    if final_score > 0:
-        # Boost pattern score in offline mode to reflect risk accurately
-        final_score = min(final_score + 15, 85)
+    # Use compute_score as single authority (llm_score=0 in offline mode, flags_score boosted)
+    flags_score = 15 if pattern_score > 0 else 0
+    final_score, _ = compute_score(
+        llm_score=0,
+        pattern_score=pattern_score,
+        flags_score=flags_score,
+        confidence=30 if pattern_score > 0 else 100,
+        use_conf_penalty=False
+    )
+    if pattern_score > 0:
+        final_score = max(final_score, min(pattern_score + 15, 85))
         
     final_level = score_to_level(final_score)
     
@@ -467,6 +473,10 @@ def analyze_multimodal(request):
             content = text.strip()
             if not content:
                 return error("Empty text input.")
+            if len(content) < 5:
+                return error("Text too short for analysis. Minimum 5 characters required.")
+            if len(content) > 8000:
+                return error("Text exceeds maximum limit of 8,000 characters.")
 
             return StreamingHttpResponse(
                 stream_pipeline(content, input_type="text", force_offline=offline_mode),

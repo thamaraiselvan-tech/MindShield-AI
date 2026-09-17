@@ -166,7 +166,7 @@
 
     } catch (err) {
       console.error(err);
-      showError("Connection error. Make sure the server is running.");
+      showError("Connection error. Please try again.");
       timelineCard.style.display = "none";
       resultsEl.style.display = "none";
     } finally {
@@ -285,7 +285,7 @@
      RENDER RESULTS
      ================================================ */
   function renderResults(d) {
-    const score = d.fake_probability || 0;
+    const score = d.fake_probability ?? 0;
     const level = d.risk_level || "Safe";
     const tactics = d.manipulation_tactics || [];
     const plainEnglish = d.plain_english_explanation || d.explanation || "";
@@ -313,7 +313,7 @@
       (d.input_type ? " | Input: " + d.input_type.toUpperCase() : "");
 
     const certEl = $("#verdictCertainty");
-    const certText = certainty.split("—")[0].trim().replace("_"," ");
+    const certText = certainty.split("—")[0].trim().replace(/_/g, " ");
     certEl.textContent = certText;
     certEl.style.background = certainty.startsWith("CONFIDENT")
       ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)";

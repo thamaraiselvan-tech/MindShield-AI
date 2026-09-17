@@ -9,6 +9,10 @@
     content="Detect psychological manipulation, scams, and misinformation in text, URLs, images, and audio. AI-powered analysis with clear explanations.">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 
@@ -84,13 +88,13 @@
 
       <!-- Text Input -->
       <div class="input-area active" data-type="text">
-        <textarea id="textInput"
+        <textarea id="textInput" maxlength="8000"
           placeholder="Paste any message, news article, social media post, or suspicious text here...&#10;&#10;Example: &quot;URGENT! Your account has been suspended. Click here immediately to verify your identity or lose access forever.&quot;"></textarea>
       </div>
 
       <!-- URL Input -->
       <div class="input-area" data-type="url">
-        <input type="url" id="urlInput" placeholder="https://example.com/suspicious-article">
+        <input type="url" id="urlInput" pattern="https?://.*" placeholder="https://example.com/suspicious-article">
       </div>
 
       <!-- Image Input -->
