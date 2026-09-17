@@ -44,13 +44,14 @@ if GEMINI_API_KEY and GENAI_AVAILABLE:
     logger.info("Gemini configured successfully.")
 
 # =========================
-# CACHE
+# IN-MEMORY CACHE (privacy-safe, no persistence)
 # =========================
 _cache = {}
 MAX_CACHE_SIZE = 100
 
 def _cache_key(text):
-    return hashlib.md5(text.encode()).hexdigest()
+    """SHA256 hash for cache key — safer than MD5."""
+    return hashlib.sha256(text.encode()).hexdigest()
 
 def _cache_get(text):
     return _cache.get(_cache_key(text))
@@ -64,51 +65,148 @@ def _cache_set(text, result):
     _cache[_cache_key(text)] = result
 
 # =========================
+# MANIPULATION TAXONOMY
+# =========================
+MANIPULATION_TACTICS = {
+    "Fear & Intimidation": "Threats, consequences, loss aversion to bypass rational thinking",
+    "Urgency & Time Pressure": "Artificial deadlines, 'act now' pressure to prevent deliberation",
+    "Authority Exploitation": "Impersonation of officials, brands, or experts to build false trust",
+    "Social Proof Manipulation": "Fake testimonials, manufactured consensus, bandwagon pressure",
+    "Emotional Exploitation": "Guilt-tripping, sympathy appeals, love bombing, flattery",
+    "Gaslighting": "Making victims doubt their own reality, memory, or perception",
+    "Scarcity Tactics": "Fake limited availability, artificial exclusivity to trigger FOMO",
+    "Reciprocity Trap": "Unsolicited gifts or favors creating psychological obligation",
+    "Information Manipulation": "Cherry-picked facts, misleading statistics, out-of-context data",
+    "Identity Deception": "Fake sender identity, spoofed sources, impersonation",
+}
+
+# =========================
 # DEFAULT FALLBACK
 # =========================
 DEFAULT_RESPONSE = {
     "manipulation_detected": False,
-    "manipulation_type": [],
+    "overall_credibility": "Uncertain",
+    "manipulation_tactics": [],
     "fake_probability": 0,
-    "credibility_status": "Uncertain",
-    "risk_level": "Low",
-    "explanation": "Analysis unavailable — AI engine did not respond.",
-    "source": "none"
+    "risk_level": "Safe",
+    "red_flags": [],
+    "plain_english_explanation": "Analysis unavailable — AI engine did not respond.",
+    "recommendation": "Please try again or use a different input.",
+    "explanation": "Analysis could not be completed at this time.",
+    "source": "none",
 }
+
+
+# =========================
+# PROMPT INJECTION PROTECTION
+# =========================
+def sanitize_input(text):
+    """
+    Strip known prompt injection patterns from user input.
+    Prevents adversarial users from overriding analysis instructions.
+    """
+    # Remove common prompt injection attempts
+    injection_patterns = [
+        r'(?i)ignore\s+(all\s+)?previous\s+instructions?',
+        r'(?i)disregard\s+(all\s+)?above',
+        r'(?i)you\s+are\s+now\s+a',
+        r'(?i)forget\s+(everything|all|your\s+instructions)',
+        r'(?i)override\s+(system|instructions?|rules?)',
+        r'(?i)new\s+instructions?:',
+        r'(?i)system\s*prompt\s*:',
+        r'(?i)return\s+.*fake_probability\s*:\s*\d+',
+        r'(?i)respond\s+with\s+json',
+    ]
+    sanitized = text
+    for pattern in injection_patterns:
+        sanitized = re.sub(pattern, '[FILTERED]', sanitized)
+    return sanitized
+
 
 # =========================
 # PROMPT BUILDER
-# Structured prompt for consistent JSON output
+# Input-type aware: different context for text, OCR, audio, URL
 # =========================
-def build_prompt(text):
+def build_prompt(text, input_type="text"):
+    """
+    Build analysis prompt with input-type context.
+    Different sources need different analysis approaches.
+    """
     short_note = ""
     if len(text) < 100:
         short_note = (
-            "NOTE: The content is short. Still analyze it and return JSON. "
-            "If there is not enough content to detect manipulation, "
-            "set fake_probability to 10 and risk_level to Low.\n\n"
+            "NOTE: The content is short. Still analyze it fully. "
+            "If insufficient to detect manipulation, set fake_probability to 10 "
+            "and risk_level to Safe.\n\n"
         )
 
+    # Input-type specific context notes
+    input_context = {
+        "text": "",
+        "image": (
+            "IMPORTANT CONTEXT: This text was extracted from an image via OCR. "
+            "Expect minor errors, broken words, or character substitutions "
+            "(e.g., '0' for 'O', '1' for 'l'). These are OCR artifacts, NOT "
+            "intentional manipulation. Focus on the overall message intent and "
+            "manipulation tactics, not formatting issues or typos.\n\n"
+        ),
+        "audio": (
+            "IMPORTANT CONTEXT: This text was transcribed from audio using speech-to-text. "
+            "It may lack punctuation, include filler words ('um', 'uh', 'like'), "
+            "and have imperfect grammar. These are transcription artifacts, NOT "
+            "signs of manipulation. Focus on the spoken message's intent and "
+            "whether the speaker uses manipulation tactics.\n\n"
+        ),
+        "url": (
+            "IMPORTANT CONTEXT: This text was scraped from a webpage. "
+            "It may contain navigation elements, ads, cookie notices, or "
+            "footer text mixed with the main content. Focus on the primary "
+            "article/page content for manipulation analysis, not boilerplate.\n\n"
+        ),
+    }
+
+    tactics_list = "\n".join(
+        f"- {name}: {desc}" for name, desc in MANIPULATION_TACTICS.items()
+    )
+
     return (
-        "You are MindShield AI — an expert security analysis system.\n"
-        "You MUST respond with ONLY a valid JSON object. No other text.\n\n"
-        + short_note +
-        "Analyze the following content for:\n"
-        "1. Psychological manipulation (fear, urgency, false authority, gaslighting, social proof, and any other factors)\n"
-        "2. Fake or misleading information (misinformation, propaganda, scams)\n\n"
+        "You are MindShield AI — an expert system specialized in detecting "
+        "psychological manipulation in digital media.\n\n"
+        "YOUR EXPERTISE COVERS THESE MANIPULATION TACTICS:\n"
+        f"{tactics_list}\n\n"
+        + input_context.get(input_type, "") +
+        short_note +
+        "ANALYZE the following content for ALL psychological manipulation tactics, "
+        "misinformation, scam patterns, and credibility issues.\n\n"
         "CONTENT:\n"
         f"\"{text}\"\n\n"
-        "Return ONLY this JSON with your real analysis values:\n"
+        "Return ONLY valid JSON (no other text):\n"
         "{\n"
         "  \"manipulation_detected\": <true or false>,\n"
-        "  \"manipulation_type\": <array of strings, empty if none>,\n"
-        "  \"fake_probability\": <integer 0-100, where 0=real and 100=fake>,\n"
-        "  \"credibility_status\": <\"Real\" or \"Fake\" or \"Uncertain\">,\n"
-        "  \"risk_level\": <\"Low\" or \"Medium\" or \"High\">,\n"
-        "  \"red_flags\": <array of specific red flags found, empty if none>,\n"
-        "  \"explanation\": <detailed explanation on why the content is flagged/not flagged and whether to trust it/open it or not, minimum 2 sentences>\n"
-        "}"
+        "  \"overall_credibility\": <\"Authentic\" or \"Suspicious\" or \"Manipulative\" or \"Highly Dangerous\">,\n"
+        "  \"fake_probability\": <integer 0-100>,\n"
+        "  \"risk_level\": <\"Safe\" or \"Low\" or \"Medium\" or \"High\" or \"Critical\">,\n"
+        "  \"manipulation_tactics\": [\n"
+        "    {\n"
+        "      \"tactic\": \"<exact tactic name from the list above>\",\n"
+        "      \"description\": \"<1-2 sentences: HOW this tactic is used in the content>\",\n"
+        "      \"severity\": \"<low or medium or high>\",\n"
+        "      \"evidence\": \"<exact quote from content that shows this tactic>\"\n"
+        "    }\n"
+        "  ],\n"
+        "  \"red_flags\": <array of specific warning signs found>,\n"
+        "  \"plain_english_explanation\": \"<2-4 sentences in simple everyday language explaining WHAT the content is trying to do to the reader and WHY they should be careful. Write as if explaining to a non-technical family member>\",\n"
+        "  \"recommendation\": \"<1-2 sentences of specific actionable advice>\",\n"
+        "  \"explanation\": \"<detailed technical analysis, minimum 3 sentences>\"\n"
+        "}\n\n"
+        "RULES:\n"
+        "- If manipulation_detected is true, you MUST list at least one tactic\n"
+        "- Each tactic MUST have evidence quoted from the content\n"
+        "- plain_english_explanation must be understandable by anyone\n"
+        "- Be precise: do NOT flag legitimate content as manipulative\n"
+        "- For authentic content, set fake_probability below 20 and explain why it is trustworthy"
     )
+
 
 # =========================
 # JSON EXTRACTOR
@@ -147,78 +245,91 @@ def extract_json(text):
     logger.warning("Could not extract JSON from LLM response.")
     return None
 
+
 # =========================
 # VALIDATE & NORMALISE
+# No artificial score inflation — raw LLM values preserved
 # =========================
+VALID_CREDIBILITY = {"Authentic", "Suspicious", "Manipulative", "Highly Dangerous", "Uncertain"}
+VALID_RISK = {"Safe", "Low", "Medium", "High", "Critical"}
+
 def validate(data):
+    """
+    Validate and normalize LLM response.
+    Preserves raw fake_probability — no artificial inflation.
+    Scoring is handled exclusively by compute_score() in scoring_engine.py.
+    """
     if not isinstance(data, dict):
         return DEFAULT_RESPONSE.copy()
 
     out = DEFAULT_RESPONSE.copy()
     out["manipulation_detected"] = bool(data.get("manipulation_detected", False))
 
+    # Overall credibility
+    cred = str(data.get("overall_credibility", "Uncertain")).strip()
+    out["overall_credibility"] = cred if cred in VALID_CREDIBILITY else "Uncertain"
+
+    # Manipulation tactics (structured field)
+    tactics = data.get("manipulation_tactics", [])
+    if isinstance(tactics, list):
+        valid_tactics = []
+        for t in tactics:
+            if isinstance(t, dict) and "tactic" in t:
+                valid_tactics.append({
+                    "tactic": str(t.get("tactic", "")),
+                    "description": str(t.get("description", "")),
+                    "severity": str(t.get("severity", "medium")).lower(),
+                    "evidence": str(t.get("evidence", "")),
+                })
+        out["manipulation_tactics"] = valid_tactics
+    else:
+        out["manipulation_tactics"] = []
+
+    # Legacy fields
     mt = data.get("manipulation_type", [])
     out["manipulation_type"] = mt if isinstance(mt, list) else []
 
-    # New: red_flags field
     rf = data.get("red_flags", [])
     out["red_flags"] = rf if isinstance(rf, list) else []
 
+    # Fake probability — preserve raw LLM value, just clamp to 0-100
     try:
         out["fake_probability"] = max(0, min(100, int(data.get("fake_probability", 0))))
     except (TypeError, ValueError):
         out["fake_probability"] = 0
 
-    cs = str(data.get("credibility_status", "Uncertain")).strip()
-    out["credibility_status"] = cs if cs in ("Real", "Fake", "Uncertain") else "Uncertain"
+    # Risk level
+    rl = str(data.get("risk_level", "Safe")).strip()
+    out["risk_level"] = rl if rl in VALID_RISK else "Safe"
 
-    rl = str(data.get("risk_level", "Low")).strip()
-    out["risk_level"] = rl if rl in ("Low", "Medium", "High") else "Low"
+    # Credibility status (legacy compat)
+    cs = str(data.get("credibility_status", "")).strip()
+    if cs in ("Real", "Fake", "Uncertain"):
+        out["credibility_status"] = cs
 
+    # Explanations
     explanation = str(data.get("explanation", "")).strip()
-    out["explanation"] = explanation if len(explanation) > 10 else "No explanation provided."
+    out["explanation"] = explanation if len(explanation) > 10 else "No detailed explanation provided."
 
+    plain = str(data.get("plain_english_explanation", "")).strip()
+    out["plain_english_explanation"] = plain if len(plain) > 10 else out["explanation"]
+
+    recommendation = str(data.get("recommendation", "")).strip()
+    out["recommendation"] = recommendation if len(recommendation) > 5 else "Exercise caution with this content."
+
+    # Preserve metadata
     for key in ("source", "response_time", "cached"):
         if key in data:
             out[key] = data[key]
 
-    # =========================
-    # CONSISTENCY FIX
-    # If risk_level=High but fake_probability=0, LLM filled template default
-    # Infer fake_probability from risk_level
-    # =========================
-    risk_to_prob = {"Low": 20, "Medium": 55, "High": 85}
-    if out["fake_probability"] == 0 and out["risk_level"] in ("Medium", "High"):
-        out["fake_probability"] = risk_to_prob[out["risk_level"]]
-    if out["manipulation_detected"] and out["fake_probability"] < 30:
-        out["fake_probability"] = max(out["fake_probability"], 40)
+    # Minimal consistency: if LLM says manipulation_detected but gave 0 probability,
+    # set a baseline. This is the ONLY adjustment — no cascading inflation.
+    if out["manipulation_detected"] and out["fake_probability"] == 0:
+        risk_to_prob = {"Safe": 5, "Low": 20, "Medium": 55, "High": 80, "Critical": 95}
+        out["fake_probability"] = risk_to_prob.get(out["risk_level"], 30)
 
     return out
 
-# =========================
-# WEIGHTED SCORING
-# Combines LLM score with rule signals for final probability
-# score = 0.7 * llm_score + 0.3 * rule_signals
-# =========================
-def weighted_score(llm_fake_prob, manipulation_detected, red_flags_count, risk_level):
-    """
-    Professional weighted scoring instead of raw LLM output.
-    LLM score = 70% weight, rule signals = 30% weight.
-    """
-    rule_score = 0
-
-    if manipulation_detected:
-        rule_score += 40
-
-    rule_score += min(red_flags_count * 10, 30)
-
-    risk_bonus = {"Low": 0, "Medium": 10, "High": 20}
-    rule_score += risk_bonus.get(risk_level, 0)
-
-    rule_score = min(rule_score, 100)
-
-    final = round(0.7 * llm_fake_prob + 0.3 * rule_score)
-    return max(0, min(100, final))
 
 # =========================
 # ENGINE: GEMINI
@@ -232,23 +343,21 @@ def analyze_with_gemini(prompt):
             start = time.time()
 
             if GENAI_V2:
-                # New google-genai package
                 client = genai_new.Client(api_key=GEMINI_API_KEY)
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash",
+                    model="gemini-2.0-flash",
                     contents=prompt,
                     config=genai_types.GenerateContentConfig(
-                        temperature=0.1,
-                        max_output_tokens=512
+                        temperature=0.0,
+                        max_output_tokens=1024
                     )
                 )
                 response_text = response.text
             else:
-                # Old google-generativeai package (fallback)
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                model = genai.GenerativeModel("gemini-2.0-flash")
                 generation_config = genai.types.GenerationConfig(
-                    temperature=0.1,
-                    max_output_tokens=512
+                    temperature=0.0,
+                    max_output_tokens=1024
                 )
                 response = model.generate_content(prompt, generation_config=generation_config)
                 response_text = response.text
@@ -257,7 +366,7 @@ def analyze_with_gemini(prompt):
             parsed = extract_json(response_text)
 
             if parsed:
-                parsed["source"] = "Gemini (gemini-1.5-flash)"
+                parsed["source"] = "Gemini (gemini-2.0-flash)"
                 parsed["response_time"] = elapsed
                 logger.info(f"Gemini responded in {elapsed}s (attempt {attempt+1})")
                 return parsed
@@ -268,6 +377,7 @@ def analyze_with_gemini(prompt):
             logger.error(f"Gemini error (attempt {attempt+1}): {e}")
 
     return None
+
 
 # =========================
 # ENGINE: OLLAMA
@@ -286,7 +396,7 @@ def analyze_with_ollama(prompt):
                     "prompt": prompt,
                     "stream": False,
                     "temperature": 0.0,
-                    "options": {"num_predict": 512, "stop": ["\n\n\n"]}
+                    "options": {"num_predict": 1024, "stop": ["\n\n\n"]}
                 },
                 timeout=OLLAMA_TIMEOUT
             )
@@ -308,53 +418,58 @@ def analyze_with_ollama(prompt):
 
     return None
 
+
 # =========================
 # MAIN ENTRY POINT
 # =========================
-def analyze_with_llm(text):
+def analyze_with_llm(text, input_type="text"):
     """
-    Analyze text for manipulation and misinformation.
+    Analyze text for psychological manipulation and misinformation.
     Priority: Cache → Gemini → Ollama → Default fallback
-    Uses weighted scoring: 70% LLM + 30% rule signals
+    Privacy: all processing in-memory, nothing persisted.
+
+    Returns raw validated LLM output — scoring is handled by compute_score().
     """
     if not text or not text.strip():
         return {**DEFAULT_RESPONSE, "explanation": "No content provided."}
 
-    text = text.strip()[:3000]
+    text = text.strip()
+    was_truncated = len(text) > 4000
+    text = text[:4000]
+
+    # Sanitize against prompt injection
+    sanitized = sanitize_input(text)
 
     # 1. Cache check
-    cached = _cache_get(text)
+    cached = _cache_get(sanitized)
     if cached:
         logger.info("Cache hit — returning cached result.")
         return {**cached, "cached": True}
 
-    prompt = build_prompt(text)
+    prompt = build_prompt(sanitized, input_type=input_type)
 
     # 2. Try Gemini
     result = analyze_with_gemini(prompt)
     if result:
         validated = validate(result)
-        # Apply weighted scoring
-        validated["fake_probability"] = weighted_score(
-            validated["fake_probability"],
-            validated["manipulation_detected"],
-            len(validated.get("red_flags", [])),
-            validated["risk_level"]
-        )
-        _cache_set(text, validated)
+        if was_truncated:
+            validated["truncation_warning"] = (
+                "Content was truncated to 4000 characters. "
+                "Manipulation patterns beyond that point were not analyzed."
+            )
+        _cache_set(sanitized, validated)
         return validated
 
     # 3. Try Ollama
     result = analyze_with_ollama(prompt)
     if result:
         validated = validate(result)
-        validated["fake_probability"] = weighted_score(
-            validated["fake_probability"],
-            validated["manipulation_detected"],
-            len(validated.get("red_flags", [])),
-            validated["risk_level"]
-        )
-        _cache_set(text, validated)
+        if was_truncated:
+            validated["truncation_warning"] = (
+                "Content was truncated to 4000 characters. "
+                "Manipulation patterns beyond that point were not analyzed."
+            )
+        _cache_set(sanitized, validated)
         return validated
 
     # 4. Short text fallback
@@ -363,11 +478,16 @@ def analyze_with_llm(text):
         return {
             **DEFAULT_RESPONSE,
             "fake_probability": 10,
-            "credibility_status": "Uncertain",
-            "risk_level": "Low",
+            "overall_credibility": "Uncertain",
+            "risk_level": "Safe",
+            "plain_english_explanation": (
+                "The content was too short for a thorough analysis. "
+                "Please provide more text or a clearer image for accurate results."
+            ),
+            "recommendation": "Provide more content for a reliable analysis.",
             "explanation": (
-                "The extracted content was too short to perform a full analysis. "
-                "Please provide a clearer image or more text for accurate results."
+                "The extracted content was too short to perform a full manipulation analysis. "
+                "Short fragments lack enough context to reliably detect psychological tactics."
             ),
             "source": "fallback — insufficient content"
         }
@@ -376,6 +496,11 @@ def analyze_with_llm(text):
     logger.error("All LLM engines failed after retries.")
     return {
         **DEFAULT_RESPONSE,
+        "plain_english_explanation": (
+            "We couldn't complete the analysis right now. "
+            "This doesn't mean the content is safe — please try again shortly."
+        ),
+        "recommendation": "Try again in a moment. If the issue persists, check your connection.",
         "explanation": (
             "Analysis could not be completed. "
             "Locally: ensure Ollama is running with 'ollama serve'. "

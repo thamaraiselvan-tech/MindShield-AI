@@ -2,26 +2,35 @@
 __pycache__/
 *.py[cod]
 *.pyo
-.env
 *.egg-info/
+dist/
+build/
+*.egg
 
 # Django
 db.sqlite3
 staticfiles/
 media/
 
-# OS
-.DS_Store
-Thumbs.db
+# Environment
+.env
+.venv/
+venv/
+env/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Whisper / ML models
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+test_api.py
+
+# Whisper model cache
 *.pt
-*.bin
-
-# Temp files
-*.tmp
-*.log

@@ -12,20 +12,32 @@ logger = logging.getLogger(__name__)
 
 # =========================
 # TRUSTED DOMAINS
+# Specific domains only — no bare TLDs to prevent over-trusting
 # =========================
 trusted_domains = [
+    # International news
     "bbc.com", "reuters.com", "nytimes.com", "theguardian.com",
-    "apnews.com", "npr.org", "thehindu.com", "ndtv.com",
+    "apnews.com", "npr.org",
+    # Indian news
+    "thehindu.com", "ndtv.com",
     "timesofindia.com", "hindustantimes.com", "indianexpress.com",
+    # Health/Science
     "who.int", "nature.com", "pubmed.ncbi.nlm.nih.gov",
     "cdc.gov", "nih.gov", "mayoclinic.org",
-    "wikipedia.org", "britannica.com", "gov.in", "nic.in",
-    "edu", "ac.in", "ac.uk",
+    # Reference
+    "wikipedia.org", "britannica.com",
+    # Indian government (specific domains only)
+    "india.gov.in", "mygov.in", "pib.gov.in",
+    "incometax.gov.in", "rbi.org.in",
+    # E-commerce
     "amazon.com", "amazon.in", "flipkart.com",
+    # Tech platforms
     "youtube.com", "google.com", "microsoft.com",
     "apple.com", "github.com", "linkedin.com",
-    "swayam.gov.in", "swayam2.ac.in", "iitm.ac.in",
-    "ugc.ac.in", "mygov.in",
+    # Indian education (specific institutions)
+    "swayam.gov.in", "ugc.ac.in",
+    "iitm.ac.in", "iitb.ac.in", "iitd.ac.in",
+    "iisc.ac.in", "nitt.edu",
 ]
 
 suspicious_tlds = [
@@ -34,11 +46,34 @@ suspicious_tlds = [
     ".ml", ".ga", ".cf", ".gq"
 ]
 
-# Homoglyph map — detects visually similar fake domains (g00gle, paypa1)
+# =========================
+# HOMOGLYPH MAP — Extended with Cyrillic/Unicode lookalikes
+# Detects visually similar fake domains (g00gle, paypa1, gооgle with Cyrillic о)
+# =========================
 HOMOGLYPHS = {
+    # ASCII number substitutions
     "0": "o", "1": "l", "3": "e", "4": "a",
     "5": "s", "6": "g", "7": "t", "8": "b",
-    "@": "a", "vv": "w"
+    "@": "a", "!": "i", "$": "s",
+    # Multi-char
+    "vv": "w", "rn": "m",
+}
+
+# Cyrillic → Latin mappings (used after NFKD normalization fails)
+CYRILLIC_MAP = {
+    '\u0430': 'a',  # Cyrillic а
+    '\u0435': 'e',  # Cyrillic е
+    '\u043e': 'o',  # Cyrillic о
+    '\u0440': 'p',  # Cyrillic р
+    '\u0441': 'c',  # Cyrillic с
+    '\u0443': 'y',  # Cyrillic у
+    '\u0445': 'x',  # Cyrillic х
+    '\u0456': 'i',  # Ukrainian і
+    '\u0455': 's',  # Cyrillic ѕ
+    '\u0458': 'j',  # Cyrillic ј
+    '\u04bb': 'h',  # Cyrillic һ
+    '\u0131': 'i',  # Turkish dotless ı
+    '\u2113': 'l',  # Script small l (ℓ)
 }
 
 # Known brands that attackers impersonate
@@ -46,21 +81,49 @@ KNOWN_BRANDS = [
     "google", "facebook", "paypal", "amazon", "apple",
     "microsoft", "netflix", "instagram", "whatsapp",
     "hdfc", "sbi", "icici", "axis", "paytm",
-    "flipkart", "swiggy", "zomato", "ola", "uber"
+    "flipkart", "swiggy", "zomato", "ola", "uber",
+    "phonepe", "gpay", "razorpay", "cred",
+    "twitter", "telegram", "discord", "linkedin",
 ]
 
 
 def normalize_domain(domain):
-    """Normalize unicode and homoglyphs for spoof detection."""
-    # Normalize unicode (catches punycode attacks)
+    """
+    Normalize unicode and homoglyphs for spoof detection.
+    Extended: handles Cyrillic, Unicode NFKD, and punycode.
+    """
+    # Decode punycode (xn--) domains
     try:
-        domain = domain.encode("ascii").decode("ascii")
+        parts = domain.split(".")
+        decoded_parts = []
+        for part in parts:
+            if part.startswith("xn--"):
+                decoded_parts.append(part.encode("ascii").decode("idna"))
+            else:
+                decoded_parts.append(part)
+        domain = ".".join(decoded_parts)
     except Exception:
-        domain = unicodedata.normalize("NFKD", domain).encode("ascii", "ignore").decode()
+        pass
+
+    # Apply Cyrillic → Latin mapping first (before NFKD strips them)
+    mapped = []
+    for char in domain.lower():
+        mapped.append(CYRILLIC_MAP.get(char, char))
+    domain = "".join(mapped)
+
+    # Unicode NFKD normalization
+    try:
+        domain = unicodedata.normalize("NFKD", domain)
+        domain = domain.encode("ascii", "ignore").decode("ascii")
+    except Exception:
+        pass
 
     normalized = domain.lower()
+
+    # Apply ASCII homoglyph substitutions
     for fake, real in HOMOGLYPHS.items():
         normalized = normalized.replace(fake, real)
+
     return normalized
 
 
@@ -85,18 +148,41 @@ def detect_subdomain_spoof(domain):
 
 
 def detect_homoglyph_attack(domain):
-    """Detect g00gle.com, paypa1.com style attacks."""
+    """
+    Detect g00gle.com, paypa1.com, gооgle.com (Cyrillic) style attacks.
+    Fixed logic: properly detects when normalized domain matches a brand
+    but the original domain doesn't exactly match the brand.
+    """
+    original_lower = domain.lower()
     normalized = normalize_domain(domain)
-    base = normalized.split(".")[0]  # just the domain name part
+
+    # Extract the main domain part (without TLD)
+    original_base = original_lower.split(".")[0]
+    normalized_base = normalized.split(".")[0]
 
     for brand in KNOWN_BRANDS:
-        # Normalized domain looks like a brand but isn't exactly it
-        if brand in normalized and not any(
-            domain.endswith(f"{brand}.{tld}") for tld in ["com", "in", "org", "net"]
-        ):
-            # Check if it's close but not exact
-            if brand != base and brand in base:
-                return True, f"Domain may be impersonating '{brand}'"
+        # Case 1: Normalized version matches the brand, but original doesn't
+        # This catches g00gle → google, paypa1 → paypal, Cyrillic spoofs
+        if brand == normalized_base and brand != original_base:
+            return True, f"Domain impersonates '{brand}' using lookalike characters"
+
+        # Case 2: Normalized version contains the brand as substring
+        # but original doesn't contain it exactly (partial match)
+        if brand in normalized_base and brand not in original_base:
+            return True, f"Domain may be impersonating '{brand}'"
+
+        # Case 3: Brand in domain but domain has extra suspicious chars
+        # e.g., google-secure.com, paypal-verify.com
+        if brand in original_base and original_base != brand:
+            # Check if it's brand + suspicious suffix
+            remainder = original_base.replace(brand, "")
+            suspicious_suffixes = [
+                "secure", "verify", "login", "update", "alert",
+                "support", "help", "service", "account", "confirm",
+            ]
+            for suffix in suspicious_suffixes:
+                if suffix in remainder:
+                    return True, f"Domain mimics '{brand}' with deceptive suffix"
 
     return False, None
 
@@ -153,6 +239,9 @@ def extract_domain_info(url):
 
     # Homoglyph attack detection
     is_homoglyph, homoglyph_reason = detect_homoglyph_attack(domain)
+    if is_homoglyph:
+        trusted = False  # override trust if homoglyph detected
+        suspicious = True
 
     domain_age_days = None
     try:

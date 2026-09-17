@@ -1,888 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>MindShield AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
-
-<style>
-/* ================================================
-   DESIGN SYSTEM
-   ================================================ */
-:root {
-  --bg-void:       #00060f;
-  --bg-deep:       #020c1b;
-  --bg-surface:    #060f1e;
-  --bg-card:       #08152a;
-  --bg-card2:      #0b1c35;
-  --bg-input:      #050e1c;
-  --accent:        #00c8ff;
-  --accent-dim:    rgba(0,200,255,0.55);
-  --accent-glow:   #0af;
-  --ok:            #00ffaa;
-  --warn:          #ffc857;
-  --danger:        #ff4d4d;
-  --b-faint:       rgba(0,200,255,0.10);
-  --b-mid:         rgba(0,200,255,0.28);
-  --b-bright:      rgba(0,200,255,0.60);
-  --t-primary:     #dff3ff;
-  --t-secondary:   #6fa8c4;
-  --t-muted:       #2e5570;
-  --scan: repeating-linear-gradient(
-    0deg,transparent,transparent 2px,
-    rgba(0,200,255,0.022) 2px,rgba(0,200,255,0.022) 4px
-  );
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
-body {
-  font-family:'Exo 2',sans-serif;
-  background:var(--bg-void);
-  color:var(--t-primary);
-  overflow-x:hidden;
-  min-height:100vh;
-  background-image:
-    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(0,110,200,0.16) 0%,transparent 70%),
-    radial-gradient(ellipse 35% 35% at 92% 85%, rgba(0,60,160,0.10) 0%,transparent 60%);
-}
-
-body::before {
-  content:"";pointer-events:none;
-  position:fixed;inset:0;z-index:9999;
-  background:var(--scan);opacity:0.5;
-}
-
-#particles-js {
-  position:fixed;width:100%;height:100%;top:0;left:0;z-index:-1;
-}
-
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-track{background:var(--bg-void);}
-::-webkit-scrollbar-thumb{background:var(--b-mid);border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:var(--accent);}
-::selection{background:rgba(0,200,255,0.22);color:#fff;}
-
-/* ================================================
-   HEADER
-   ================================================ */
-.header {
-  text-align: center;
-  position:relative;
-  display:flex;
-  justify-content: center;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 40px;
-  height:72px;
-  background:linear-gradient(90deg,#000d1c,#010f1e 60%,#00090f);
-  border-bottom:1px solid var(--b-bright);
-  overflow:hidden;
-  z-index:100;
-}
-
-.header-left {
-  display:flex;align-items:center;gap:16px;
-}
-
-.header img {
-  text-align: center;
-  height:44px;width:auto;flex-shrink:0;
-  filter:drop-shadow(0 0 10px rgba(0,200,255,0.55));
-  animation:logoPulse 4s ease-in-out infinite alternate;
-}
-
-@keyframes logoPulse {
-  from{filter:drop-shadow(0 0 5px rgba(0,200,255,0.4));}
-  to  {filter:drop-shadow(0 0 18px rgba(0,200,255,0.95));}
-}
-
-.header-title {
-  font-family:'Orbitron',sans-serif;
-  font-size:15px;font-weight:700;letter-spacing:2.5px;
-  text-transform:uppercase;
-  background:linear-gradient(90deg,#e0f4ff,#00c8ff,#e0f4ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-
-.header-subtitle {
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:2px;
-  color:var(--t-muted);text-transform:uppercase;
-  margin-top:2px;
-}
-
-/* status pill */
-.status-pill {
-  display:flex;align-items:center;gap:8px;
-  padding:6px 14px;
-  border:1px solid var(--b-mid);border-radius:20px;
-  background:rgba(0,200,255,0.04);
-  font-family:'Space Mono',monospace;font-size:10px;
-  letter-spacing:1.5px;color:var(--t-secondary);text-transform:uppercase;
-}
-.status-dot {
-  width:7px;height:7px;border-radius:50%;
-  background:var(--ok);
-  box-shadow:0 0 8px var(--ok);
-  animation:dotPulse 2s ease-in-out infinite;
-}
-@keyframes dotPulse{
-  0%,100%{opacity:1;}50%{opacity:0.4;}
-}
-
-.header::after {
-  content:"";position:absolute;top:0;left:-50%;width:35%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.05),transparent);
-  animation:hdrSweep 5s ease-in-out infinite;
-}
-@keyframes hdrSweep{0%{left:-50%;}100%{left:130%;}}
-
-.header::before {
-  content:"";position:absolute;bottom:-1px;left:0;height:2px;
-  background:linear-gradient(90deg,var(--accent),transparent);
-  animation:hdrLine 3s ease-in-out infinite alternate;
-}
-@keyframes hdrLine{from{width:160px;opacity:.6;}to{width:320px;opacity:1;}}
-
-/* ================================================
-   PAGE LAYOUT
-   ================================================ */
-.page {
-  max-width:1200px;
-  margin:0 auto;
-  padding:32px 28px 60px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-rows:auto;
-  gap:24px;
-}
-
-/* ================================================
-   CARD BASE
-   ================================================ */
-.card {
-  background:var(--bg-card);
-  border:1px solid var(--b-mid);
-  border-radius:4px;
-  position:relative;
-  overflow:hidden;
-  animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both;
-}
-
-.card::after {
-  content:"";position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,var(--accent),transparent 70%);
-}
-
-/* chamfered corner */
-.card-chamfer {
-  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
-}
-.card-chamfer::before {
-  content:"";position:absolute;
-  top:0;right:0;width:40px;height:40px;
-  border-top:1px solid var(--accent);
-  border-right:1px solid var(--accent);
-  pointer-events:none;z-index:1;
-}
-
-.card-header {
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 22px 14px;
-  border-bottom:1px solid var(--b-faint);
-}
-
-.card-title {
-  font-family:'Orbitron',sans-serif;
-  font-size:11px;font-weight:700;
-  letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--accent);
-}
-
-.card-tag {
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:2px;
-  color:var(--t-muted);text-transform:uppercase;
-}
-
-.card-body {
-  padding:20px 22px;
-}
-
-/* stagger animations */
-.card:nth-child(1){animation-delay:.05s;}
-.card:nth-child(2){animation-delay:.12s;}
-.card:nth-child(3){animation-delay:.18s;}
-.card:nth-child(4){animation-delay:.22s;}
-.card:nth-child(5){animation-delay:.28s;}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(22px);}
-  to  {opacity:1;transform:translateY(0);}
-}
-
-/* ================================================
-   GRID LAYOUT ASSIGNMENTS
-   ================================================ */
-.card-text      { grid-column:1; grid-row:1; }
-.card-media     { grid-column:2; grid-row:1; }
-.card-url       { grid-column:1 / span 2; grid-row:2; }
-.card-action    { grid-column:1 / span 2; grid-row:3; }
-.card-results   { grid-column:1 / span 2; grid-row:4; }
-
-/* ================================================
-   LABELS
-   ================================================ */
-label {
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:10px;
-  font-size:10px;font-weight:600;
-  letter-spacing:2px;text-transform:uppercase;
-  color:var(--accent);
-  font-family:'Space Mono',monospace;
-}
-label::before {
-  content:"";display:inline-block;
-  width:2px;height:11px;
-  background:var(--accent);border-radius:1px;
-  box-shadow:0 0 5px var(--accent-glow);
-}
-
-/* ================================================
-   INPUTS
-   ================================================ */
-textarea,
-input[type="text"],
-input[type="file"] {
-  width:100%;
-  background:var(--bg-input);
-  border:1px solid var(--b-mid);
-  border-radius:3px;
-  color:var(--t-primary);
-  font-family:'Space Mono',monospace;
-  font-size:12px;outline:none;
-  transition:border-color .2s,box-shadow .2s;
-  padding:12px 14px;
-}
-
-textarea {
-  height:120px;resize:none;line-height:1.75;
-}
-
-textarea::placeholder,input::placeholder {
-  color:var(--t-muted);font-style:italic;
-}
-
-textarea:focus,input[type="text"]:focus,input[type="file"]:focus {
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(0,200,255,0.09),inset 0 0 18px rgba(0,200,255,0.03);
-}
-
-textarea:hover,input[type="text"]:hover { border-color:rgba(0,200,255,0.42); }
-
-/* ---- file upload styled zone ---- */
-.upload-zone {
-  position:relative;
-  border:1px dashed var(--b-mid);
-  border-radius:3px;
-  padding:22px 16px;
-  text-align:center;
-  cursor:pointer;
-  transition:border-color .2s,background .2s;
-  background:var(--bg-input);
-  margin-bottom:16px;
-}
-.upload-zone:hover {
-  border-color:var(--accent);
-  background:rgba(0,200,255,0.03);
-}
-.upload-zone input[type="file"] {
-  position:absolute;inset:0;opacity:0;cursor:pointer;
-  width:100%;height:100%;padding:0;border:none;background:none;
-}
-.upload-icon {
-  font-size:22px;margin-bottom:6px;
-  display:block;filter:drop-shadow(0 0 6px rgba(0,200,255,0.4));
-}
-.upload-label {
-  font-family:'Space Mono',monospace;
-  font-size:10px;letter-spacing:1.5px;
-  color:var(--t-secondary);text-transform:uppercase;
-}
-.upload-hint {
-  font-size:10px;color:var(--t-muted);margin-top:4px;
-  font-family:'Space Mono',monospace;
-}
-
-/* URL row */
-.url-row {
-  display:flex;align-items:center;gap:12px;
-}
-.url-prefix {
-  font-family:'Space Mono',monospace;
-  font-size:11px;color:var(--t-muted);
-  letter-spacing:1px;white-space:nowrap;flex-shrink:0;
-}
-
-/* ================================================
-   BUTTON
-   ================================================ */
-button {
-  width:100%;padding:16px 24px;
-  background:transparent;
-  border:1px solid var(--accent);
-  border-radius:3px;
-  font-family:'Orbitron',sans-serif;
-  font-size:13px;font-weight:700;
-  letter-spacing:4px;text-transform:uppercase;
-  color:var(--accent);cursor:pointer;
-  position:relative;overflow:hidden;
-  transition:color .3s,box-shadow .3s;
-  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
-}
-button::before {
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.14),transparent);
-  transform:translateX(-100%);transition:transform .5s ease;
-}
-button:hover {
-  color:#fff;
-  box-shadow:0 0 28px rgba(0,200,255,0.35),inset 0 0 20px rgba(0,200,255,0.07);
-}
-button:hover::before { transform:translateX(200%);transition:transform .8s ease; }
-button:active { transform:scale(0.99); }
-
-/* ================================================
-   LOADING BAR
-   ================================================ */
-.loading {
-  margin-top:14px;display:none;
-  font-size:10px;font-family:'Space Mono',monospace;
-  letter-spacing:2px;text-transform:uppercase;
-  color:var(--accent);font-weight:700;
-  position:relative;overflow:hidden;
-  padding:10px 16px;
-  background:rgba(0,200,255,0.04);
-  border-left:2px solid var(--accent);border-radius:0 3px 3px 0;
-}
-.scanning::after {
-  content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.35),transparent);
-  animation:scan 1.6s linear infinite;
-}
-@keyframes scan{100%{left:100%;}}
-
-/* ================================================
-   RESULTS — STAT BADGES
-   ================================================ */
-.results-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:14px;
-  margin-bottom:22px;
-}
-
-.stat-badge {
-  background:var(--bg-surface);
-  border:1px solid var(--b-faint);
-  border-radius:3px;
-  padding:16px 18px;
-  position:relative;overflow:hidden;
-}
-.stat-badge::before {
-  content:"";position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,var(--accent),transparent 60%);
-}
-.stat-badge-label {
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:2px;
-  text-transform:uppercase;color:var(--t-muted);
-  margin-bottom:8px;
-}
-.stat-badge-value {
-  font-family:'Orbitron',sans-serif;
-  font-size:18px;font-weight:700;
-  color:var(--t-primary);
-  line-height:1.1;
-}
-.stat-badge-value.ok     { color:var(--ok); text-shadow:0 0 12px rgba(0,255,170,0.4); }
-.stat-badge-value.warn   { color:var(--warn); text-shadow:0 0 12px rgba(255,200,87,0.4); }
-.stat-badge-value.danger { color:var(--danger); text-shadow:0 0 12px rgba(255,77,77,0.4); }
-
-/* ================================================
-   RESULTS — BOTTOM SPLIT
-   ================================================ */
-.results-bottom {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
-/* gauge panel */
-.gauge-panel {
-  background:var(--bg-surface);
-  border:1px solid var(--b-faint);
-  border-radius:3px;
-  padding:20px 16px 14px;
-  display:flex;flex-direction:column;align-items:center;
-  position:relative;overflow:hidden;
-}
-.gauge-panel::before {
-  content:"RISK METER";
-  position:absolute;top:12px;left:16px;
-  font-family:'Space Mono',monospace;font-size:9px;
-  letter-spacing:2.5px;color:var(--t-muted);text-transform:uppercase;
-}
-
-/* explanation + triggers panel */
-.info-panel {
-  display:flex;flex-direction:column;gap:14px;
-}
-
-.info-block {
-  background:var(--bg-surface);
-  border:1px solid var(--b-faint);
-  border-radius:3px;
-  padding:16px 18px;
-  flex:1;position:relative;overflow:hidden;
-}
-.info-block::before {
-  content:"";position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,var(--accent-dim),transparent 60%);
-}
-.info-block-label {
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:2px;
-  text-transform:uppercase;color:var(--t-muted);
-  margin-bottom:10px;
-}
-.info-block-value {
-  font-family:'Space Mono',monospace;
-  font-size:12px;line-height:1.75;
-  color:var(--t-secondary);
-}
-
-/* triggers chips */
-.trigger-chips {
-  display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;
-}
-.chip {
-  padding:3px 10px;
-  border:1px solid rgba(255,200,87,0.35);
-  border-radius:2px;
-  background:rgba(255,200,87,0.06);
-  font-family:'Space Mono',monospace;
-  font-size:10px;letter-spacing:1px;
-  color:var(--warn);text-transform:uppercase;
-}
-
-/* ================================================
-   URL DETAILS PANEL
-   ================================================ */
-#urlDetails {
-  display:none;
-  margin-top:16px;
-  background:var(--bg-surface);
-  border:1px solid var(--b-faint);
-  border-radius:3px;
-  overflow:hidden;
-}
-#urlDetails h4 {
-  font-family:'Orbitron',sans-serif;font-size:10px;
-  letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--warn);
-  padding:12px 18px;
-  border-bottom:1px solid var(--b-faint);
-  background:rgba(255,200,87,0.04);
-}
-.url-grid {
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:0;
-}
-.url-row-item {
-  padding:10px 18px;
-  border-bottom:1px solid var(--b-faint);
-  display:flex;align-items:center;justify-content:space-between;
-  gap:8px;
-}
-.url-row-item:nth-child(odd){ background:rgba(0,200,255,0.015); }
-.url-key {
-  font-family:'Space Mono',monospace;font-size:9px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--t-muted);
-  flex-shrink:0;
-}
-.url-val {
-  font-family:'Space Mono',monospace;font-size:11px;
-  color:var(--t-primary);text-align:right;word-break:break-all;
-}
-
-/* ================================================
-   RESULT SCORE heading (hidden — replaced by badges)
-   ================================================ */
-#score { display:none; }
-
-/* canvas */
-#riskGauge {
-  display:block;margin:8px auto 0;
-  filter:drop-shadow(0 0 16px rgba(0,200,255,0.18));
-}
-
-/* ================================================
-   FOOTER
-   ================================================ */
-.footer-note {
-  grid-column:1 / span 2;
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:1.5px;
-  color:var(--t-muted);text-align:center;text-transform:uppercase;
-  padding-top:8px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindShield AI — Psychological Manipulation Detector</title>
+  <meta name="description"
+    content="Detect psychological manipulation, scams, and misinformation in text, URLs, images, and audio. AI-powered analysis with clear explanations.">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<!-- ======================== HEADER ======================== -->
-<div class="header">
-  <div class="header-left">
-    <img src="logo.png" alt="MindShield AI Logo">
-    <div>
-      <div class="header-title">MindShield AI</div>
-      <div class="header-subtitle">Cognitive Manipulation Detection System</div>
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header>
+    <div class="logo-row">
+      <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00d4ff" />
+            <stop offset="100%" stop-color="#7c3aed" />
+          </linearGradient>
+        </defs>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span class="logo-text">MindShield AI</span>
     </div>
-  </div>
-  <div class="status-pill">
-    <div class="status-dot"></div>
-    System Online
-  </div>
-</div>
+    <p class="tagline">Detecting Psychological Manipulation in Digital Media</p>
+    <div class="privacy-badge-header">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0110 0v4" />
+      </svg>
+      Zero-Storage Privacy — Your data is never saved
+    </div>
+  </header>
 
-<!-- ======================== PAGE GRID ======================== -->
-<div class="page">
+  <!-- ════════════════ MAIN ════════════════ -->
+  <main class="container">
 
-  <!-- ── Card 1: Text Input ── -->
-  <div class="card card-chamfer card-text">
-    <div class="card-header">
-      <div class="card-title">Text Analysis</div>
-      <div class="card-tag">Input · 01</div>
-    </div>
-    <div class="card-body">
-      <label>Message Content</label>
-      <textarea id="textInput" placeholder="Paste or type the message to analyze..."></textarea>
-    </div>
-  </div>
+    <!-- Error Toast -->
+    <div class="error-toast" id="errorToast"></div>
 
-  <!-- ── Card 2: Media Inputs ── -->
-  <div class="card card-chamfer card-media">
-    <div class="card-header">
-      <div class="card-title">Media Upload</div>
-      <div class="card-tag">Input · 02</div>
-    </div>
-    <div class="card-body">
-      <label>Image File</label>
-      <div class="upload-zone">
-        <input type="file" id="imageInput" accept="image/*">
-        <span class="upload-icon">🖼</span>
-        <div class="upload-label">Drop image or click to browse</div>
-        <div class="upload-hint">PNG, JPG, WEBP supported</div>
+    <!-- ── Input Panel ── -->
+    <section class="input-panel">
+      <div class="tabs">
+        <button class="tab-btn active" data-type="text" id="tabText">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <span class="tab-label">Text</span>
+        </button>
+        <button class="tab-btn" data-type="url" id="tabUrl">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+          </svg>
+          <span class="tab-label">URL</span>
+        </button>
+        <button class="tab-btn" data-type="image" id="tabImage">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <span class="tab-label">Image</span>
+        </button>
+        <button class="tab-btn" data-type="audio" id="tabAudio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+            <path d="M19 10v2a7 7 0 01-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+          </svg>
+          <span class="tab-label">Audio</span>
+        </button>
       </div>
 
-      <label>Audio File</label>
-      <div class="upload-zone">
-        <input type="file" id="audioInput" accept="audio/*">
-        <span class="upload-icon">🎙</span>
-        <div class="upload-label">Drop audio or click to browse</div>
-        <div class="upload-hint">MP3, WAV, M4A supported</div>
+      <!-- Text Input -->
+      <div class="input-area active" data-type="text">
+        <textarea id="textInput"
+          placeholder="Paste any message, news article, social media post, or suspicious text here...&#10;&#10;Example: &quot;URGENT! Your account has been suspended. Click here immediately to verify your identity or lose access forever.&quot;"></textarea>
       </div>
-    </div>
-  </div>
 
-  <!-- ── Card 3: URL Input ── -->
-  <div class="card card-url">
-    <div class="card-header">
-      <div class="card-title">URL Inspection</div>
-      <div class="card-tag">Input · 03</div>
-    </div>
-    <div class="card-body">
-      <label>Target URL</label>
-      <div class="url-row">
-        <span class="url-prefix">https://</span>
-        <input type="text" id="urlInput" placeholder="Paste the full URL to inspect domain, HTTPS, structure flags...">
+      <!-- URL Input -->
+      <div class="input-area" data-type="url">
+        <input type="url" id="urlInput" placeholder="https://example.com/suspicious-article">
       </div>
-    </div>
-  </div>
 
-  <!-- ── Card 4: Action ── -->
-  <div class="card card-action">
-    <div class="card-body">
-      <button onclick="analyzeMessage()">⬡ &nbsp; Run Cognitive Threat Analysis</button>
-      <div class="loading scanning" id="loading">Neural engine scanning content — please wait...</div>
-    </div>
-  </div>
-
-  <!-- ── Card 5: Results ── -->
-  <div class="card card-results">
-    <div class="card-header">
-      <div class="card-title">Analysis Report</div>
-      <div class="card-tag">Output · Live</div>
-    </div>
-    <div class="card-body">
-
-      <!-- hidden original h3 (JS writes to it; badges read from it) -->
-      <h3 id="score" style="display:none;">Manipulation Risk Score: --%</h3>
-
-      <!-- Stat badges row -->
-      <div class="results-grid">
-        <div class="stat-badge">
-          <div class="stat-badge-label">Risk Score</div>
-          <div class="stat-badge-value" id="badgeScore">--%</div>
-        </div>
-        <div class="stat-badge">
-          <div class="stat-badge-label">Risk Level</div>
-          <div class="stat-badge-value" id="riskLevel">--</div>
-        </div>
-        <div class="stat-badge">
-          <div class="stat-badge-label">Threats Detected</div>
-          <div class="stat-badge-value" id="threatCount">--</div>
+      <!-- Image Input -->
+      <div class="input-area" data-type="image">
+        <div class="drop-zone" id="imageDropZone">
+          <div class="drop-zone-icon">
+            <svg width="48" height="48" fill="none" stroke="#475569" stroke-width="1.5" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </div>
+          <div class="drop-zone-text">Drop an image here or click to browse</div>
+          <div class="drop-zone-hint">Supports JPEG, PNG, WEBP, GIF (max 5MB)</div>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+          <div class="file-name"></div>
         </div>
       </div>
 
-      <!-- Bottom split: gauge + info -->
-      <div class="results-bottom">
-
-        <!-- Gauge -->
-        <div class="gauge-panel">
-          <canvas id="riskGauge" width="300" height="180"></canvas>
+      <!-- Audio Input -->
+      <div class="input-area" data-type="audio">
+        <div class="drop-zone" id="audioDropZone">
+          <div class="drop-zone-icon">
+            <svg width="48" height="48" fill="none" stroke="#475569" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+              <path d="M19 10v2a7 7 0 01-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+            </svg>
+          </div>
+          <div class="drop-zone-text">Drop an audio file here or click to browse</div>
+          <div class="drop-zone-hint">Supports MP3, WAV, OGG, M4A (max 20MB)</div>
+          <input type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/x-m4a" style="display:none">
+          <div class="file-name"></div>
         </div>
+      </div>
 
-        <!-- Info panels -->
-        <div class="info-panel">
-          <div class="info-block">
-            <div class="info-block-label">Psychological Triggers</div>
-            <div id="triggerArea">
-              <div class="trigger-chips" id="triggers">
-                <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--t-muted);">Awaiting analysis...</span>
-              </div>
+      <div class="offline-toggle-container">
+        <label class="switch">
+          <input type="checkbox" id="offlineModeToggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label">Run offline (Saves Gemini quota)</span>
+      </div>
+
+      <button class="analyze-btn" id="analyzeBtn">
+        <span class="btn-text">Analyze for Manipulation</span>
+        <div class="spinner"></div>
+      </button>
+    </section>
+
+    <!-- ════════════════ RESULTS ════════════════ -->
+    <section id="results">
+
+      <!-- Agent Execution Timeline (Live Progress) -->
+      <div class="section-card agent-timeline-card" id="agentTimelineCard" style="display:none">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--accent-purple)" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </span>
+          Multi-Agent Team Analysis Pipeline
+        </div>
+        <div class="agent-timeline">
+          <div class="timeline-step" id="step-ingesting">
+            <div class="step-icon">📤</div>
+            <div class="step-details">
+              <div class="step-name">Ingestion Agent</div>
+              <div class="step-status" id="status-ingesting">Waiting...</div>
             </div>
           </div>
-          <div class="info-block" style="flex:2;">
-            <div class="info-block-label">Explanation</div>
-            <div class="info-block-value" id="explanation">Analysis results will appear here after submission.</div>
+          <div class="timeline-step" id="step-detecting">
+            <div class="step-icon">🔍</div>
+            <div class="step-details">
+              <div class="step-name">Pattern Detection Agent</div>
+              <div class="step-status" id="status-detecting">Waiting...</div>
+            </div>
+          </div>
+          <div class="timeline-step" id="step-scoring">
+            <div class="step-icon">📊</div>
+            <div class="step-details">
+              <div class="step-name">Risk Scoring Agent</div>
+              <div class="step-status" id="status-scoring">Waiting...</div>
+            </div>
+          </div>
+          <div class="timeline-step" id="step-shielding">
+            <div class="step-icon">🛡️</div>
+            <div class="step-details">
+              <div class="step-name">Explanation & Shield Agent</div>
+              <div class="step-status" id="status-shielding">Waiting...</div>
+            </div>
           </div>
         </div>
-
       </div>
 
-      <!-- URL Details -->
-      <div id="urlDetails">
-        <h4>URL Domain Analysis</h4>
-        <div class="url-grid">
-          <div class="url-row-item"><span class="url-key">Domain</span><span class="url-val" id="domain">--</span></div>
-          <div class="url-row-item"><span class="url-key">HTTPS</span><span class="url-val" id="httpsStatus">--</span></div>
-          <div class="url-row-item"><span class="url-key">Trusted Domain</span><span class="url-val" id="trustedDomain">--</span></div>
-          <div class="url-row-item"><span class="url-key">Suspicious TLD</span><span class="url-val" id="suspiciousTLD">--</span></div>
-          <div class="url-row-item"><span class="url-key">Structure Flags</span><span class="url-val" id="urlFlags">--</span></div>
-          <div class="url-row-item"><span class="url-key">Final Score</span><span class="url-val" id="finalScore">--</span></div>
-          <div class="url-row-item"><span class="url-key">Final Level</span><span class="url-val" id="finalLevel">--</span></div>
-          <div class="url-row-item"><span class="url-key">Extraction Method</span><span class="url-val" id="extractionMethod">--</span></div>
-          <div class="url-row-item" style="grid-column:1/span 2;"><span class="url-key">Extraction Status</span><span class="url-val" id="extractionStatus">--</span></div>
+      <!-- Verdict Card -->
+      <div class="verdict-card" id="verdictCard">
+        <div class="verdict-main-row">
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" width="120" height="120" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="52" />
+              <circle class="gauge-fill" id="gaugeFill" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="gauge-score">
+              <span class="gauge-number" id="gaugeNumber">0</span>
+              <span class="gauge-label">Risk</span>
+            </div>
+          </div>
+          <div class="verdict-info">
+            <div class="verdict-level" id="verdictLevel">Safe</div>
+            <div class="verdict-credibility" id="verdictCredibility"></div>
+            <span class="verdict-certainty" id="verdictCertainty">CONFIDENT</span>
+          </div>
+        </div>
+        
+        <!-- 3D Risk Score Dimensions Dashboard -->
+        <div class="risk-dimensions" id="riskDimensions">
+          <div class="dimension-pill" data-dim="emotional">
+            <span class="dim-label">Emotional Manipulation</span>
+            <span class="dim-val" id="dimEmotional">0%</span>
+          </div>
+          <div class="dimension-pill" data-dim="deception">
+            <span class="dim-label">Deception & Lies</span>
+            <span class="dim-val" id="dimDeception">0%</span>
+          </div>
+          <div class="dimension-pill" data-dim="coercion">
+            <span class="dim-label">Pressure & Coercion</span>
+            <span class="dim-val" id="dimCoercion">0%</span>
+          </div>
         </div>
       </div>
 
-    </div>
-  </div>
+      <!-- Manipulation Tactics -->
+      <div class="section-card">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </span>
+          Manipulation Tactics Detected
+        </div>
+        <div class="tactics-grid" id="tacticsContainer"></div>
+      </div>
 
-  <div class="footer-note">
-    * Advisory output only — final judgment remains with the user. v2.0 · MindShield AI
-  </div>
+      <!-- Bilingual Explanations -->
+      <div class="section-card">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </span>
+          What This Means / இதன் பொருள்
+        </div>
+        <div class="plain-english" id="plainEnglish"></div>
+        <div class="tamil-divider"></div>
+        <div class="section-title-tamil">பாதுகாப்பு விளக்கம் (தமிழ்)</div>
+        <div class="tamil-explanation" id="tamilExplanation"></div>
+      </div>
 
-</div><!-- end .page -->
+      <!-- Recommendation -->
+      <div class="section-card" id="recommendationSection">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--safe)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+          Shield Advice / பாதுகாப்பு பரிந்துரை
+        </div>
+        <div class="recommendation" id="recommendation"></div>
+        <div class="tamil-divider"></div>
+        <div class="tamil-recommendation" id="tamilRecommendation"></div>
+      </div>
 
-<!-- Particles -->
-<div id="particles-js"></div>
-<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
-<script>
-tsParticles.load("particles-js",{
-  particles:{
-    number:{value:55},
-    color:{value:"#3b82f6"},
-    links:{enable:true,color:"#3b82f6",opacity:0.25},
-    move:{enable:true,speed:.9},
-    size:{value:1.8}
-  },
-  background:{color:"#00060f"}
-});
-</script>
+      <!-- Extracted Content (Image/Audio/URL) -->
+      <div class="section-card" id="extractedSection" style="display:none">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </span>
+          <span id="extractedTitle">Extracted Content</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px" id="extractedMeta"></div>
+        <div class="extracted-text" id="extractedContent"></div>
+      </div>
 
-<!-- ======================== MAIN JS (unchanged logic) ======================== -->
-<script>
-async function analyzeMessage() {
-    const text = document.getElementById("textInput").value;
-    const url = document.getElementById("urlInput").value;
-    const image = document.getElementById("imageInput").files[0];
-    const audio = document.getElementById("audioInput").files[0];
+      <!-- Score Breakdown -->
+      <div class="section-card">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+          </span>
+          Analysis Breakdown
+        </div>
+        <div class="breakdown-bars">
+          <div class="bar-row" id="barLLM">
+            <span class="bar-label">AI Analysis</span>
+            <div class="bar-track">
+              <div class="bar-fill"></div>
+            </div>
+            <span class="bar-value">0</span>
+          </div>
+          <div class="bar-row" id="barPattern">
+            <span class="bar-label">Pattern Match</span>
+            <div class="bar-track">
+              <div class="bar-fill"></div>
+            </div>
+            <span class="bar-value">0</span>
+          </div>
+          <div class="bar-row" id="urlBarRow" style="display:none">
+            <span class="bar-label">URL Risk</span>
+            <div class="bar-track">
+              <div class="bar-fill"></div>
+            </div>
+            <span class="bar-value">0</span>
+          </div>
+          <div class="bar-row" id="barFinal">
+            <span class="bar-label">Final Score</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="background:var(--accent-gradient)"></div>
+            </div>
+            <span class="bar-value">0</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;font-size:0.75rem;color:var(--text-muted)" id="sourceInfo"></div>
+      </div>
 
-    const formData = new FormData();
-    if (text) formData.append("text", text);
-    if (url) formData.append("url", url);
-    if (image) formData.append("image", image);
-    if (audio) formData.append("audio", audio);
+      <!-- System Flags -->
+      <div class="section-card">
+        <div class="section-title">
+          <span class="section-title-icon">
+            <svg width="18" height="18" fill="none" stroke="var(--medium)" stroke-width="2" viewBox="0 0 24 24">
+              <path
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </span>
+          Warning Signals
+        </div>
+        <div class="flags-list" id="flagsContainer"></div>
+      </div>
 
-    document.getElementById("loading").style.display = "block";
-    document.getElementById("score").innerText = "Manipulation Risk Score: --%";
-    document.getElementById("riskLevel").innerText = "--";
-    document.getElementById("triggers").innerText = "--";
-    document.getElementById("explanation").innerText = "";
-    document.getElementById("urlDetails").style.display = "none";
+    </section>
+  </main>
 
-    // reset badges
-    document.getElementById("badgeScore").innerText = "--%";
-    document.getElementById("badgeScore").className = "stat-badge-value";
-    document.getElementById("riskLevel").className = "stat-badge-value";
-    document.getElementById("threatCount").innerText = "--";
+  <!-- ════════════════ FOOTER ════════════════ -->
+  <footer>
+    <p>MindShield AI &mdash; Privacy-first psychological manipulation detection.</p>
+    <p style="margin-top:4px">Your content is processed in memory and <strong>immediately discarded</strong>. Nothing is
+      ever stored.</p>
+  </footer>
 
-    try {
-        const response = await fetch("http://127.0.0.1:8000/analyze/", {
-            method: "POST",
-            body: formData
-        });
-        const data = await response.json();
-
-        const prob = data.fake_probability ?? 0;
-        document.getElementById("score").innerText = "Manipulation Risk Score: " + prob + "%";
-
-        // update badge score
-        const badgeScore = document.getElementById("badgeScore");
-        badgeScore.innerText = prob + "%";
-        badgeScore.className = "stat-badge-value " + (prob < 35 ? "ok" : prob < 65 ? "warn" : "danger");
-
-        // risk level badge
-        const rlEl = document.getElementById("riskLevel");
-        rlEl.innerText = data.risk_level ?? "Unknown";
-        const rl = (data.risk_level ?? "").toLowerCase();
-        rlEl.className = "stat-badge-value " + (rl.includes("low") ? "ok" : rl.includes("mod") ? "warn" : rl.includes("high") ? "danger" : "");
-
-        // triggers as chips
-        const triggerList = data.manipulation_type ?? [];
-        document.getElementById("threatCount").innerText = triggerList.length || 0;
-        const trigsEl = document.getElementById("triggers");
-        if (triggerList.length) {
-            trigsEl.innerHTML = triggerList.map(t =>
-                `<span class="chip">${t}</span>`
-            ).join("");
-        } else {
-            trigsEl.innerHTML = `<span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--t-muted);">None detected</span>`;
-        }
-
-        document.getElementById("explanation").innerText = data.explanation ?? "No explanation available.";
-
-        drawGauge(prob);
-
-        if (data.input_type === "url") {
-            document.getElementById("urlDetails").style.display = "block";
-            const d = data.domain_analysis ?? {};
-            document.getElementById("domain").innerText = d.domain ?? "--";
-            document.getElementById("httpsStatus").innerText = d.is_https ? "Yes" : "No";
-            document.getElementById("trustedDomain").innerText = d.trusted_domain ? "Yes" : "No";
-            document.getElementById("suspiciousTLD").innerText = d.suspicious_tld ? "Yes" : "No";
-            document.getElementById("urlFlags").innerText = (data.url_structure_flags ?? []).join(", ") || "None";
-            document.getElementById("finalScore").innerText = data.final_risk_score ?? "--";
-            document.getElementById("finalLevel").innerText = data.final_risk_level ?? "--";
-            document.getElementById("extractionMethod").innerText = data.extraction_method ?? "--";
-            document.getElementById("extractionStatus").innerText = data.extraction_status ?? "--";
-        }
-
-    } catch (err) {
-        document.getElementById("score").innerText = "Error connecting to backend";
-        document.getElementById("badgeScore").innerText = "ERR";
-        document.getElementById("riskLevel").innerText = "--";
-        document.getElementById("triggers").innerHTML = `<span style="color:var(--danger);font-family:'Space Mono',monospace;font-size:11px;">Backend unreachable</span>`;
-        document.getElementById("explanation").innerText = "";
-    } finally {
-        document.getElementById("loading").style.display = "none";
-    }
-}
-
-// ---- Speedometer Gauge (unchanged) ----
-function drawGauge(value) {
-    const canvas = document.getElementById("riskGauge");
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    const cx = W / 2, cy = H - 20;
-    const R = 110, trackW = 16;
-    const startA = Math.PI, endA = 2 * Math.PI;
-    const valueA = startA + (value / 100) * Math.PI;
-    const color = value < 35 ? "#00ffaa" : value < 65 ? "#ffc857" : "#ff4d4d";
-
-    // tick marks
-    for (let i = 0; i <= 10; i++) {
-        const a = startA + (i / 10) * Math.PI;
-        const isMajor = i % 2 === 0;
-        const r1 = R + trackW + 5;
-        const r2 = r1 + (isMajor ? 10 : 6);
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
-        ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
-        ctx.strokeStyle = isMajor ? "rgba(0,200,255,0.7)" : "rgba(0,200,255,0.28)";
-        ctx.lineWidth = isMajor ? 2 : 1;
-        ctx.stroke();
-    }
-
-    // labels
-    [{pct:0,l:"0"},{pct:25,l:"25"},{pct:50,l:"50"},{pct:75,l:"75"},{pct:100,l:"100"}].forEach(({pct,l})=>{
-        const a = startA + (pct / 100) * Math.PI;
-        const lr = R + trackW + 22;
-        ctx.font = "600 9px 'Exo 2',sans-serif";
-        ctx.fillStyle = "rgba(0,200,255,0.5)";
-        ctx.textAlign = "center";ctx.textBaseline = "middle";
-        ctx.fillText(l, cx + Math.cos(a)*lr, cy + Math.sin(a)*lr);
-    });
-
-    // track bg
-    ctx.beginPath();ctx.arc(cx,cy,R,startA,endA);
-    ctx.strokeStyle="rgba(0,200,255,0.09)";ctx.lineWidth=trackW;ctx.lineCap="round";ctx.stroke();
-
-    // zones
-    [{from:0,to:35,col:"rgba(0,255,170,0.16)"},{from:35,to:65,col:"rgba(255,200,87,0.16)"},{from:65,to:100,col:"rgba(255,77,77,0.16)"}]
-    .forEach(z=>{
-        ctx.beginPath();ctx.arc(cx,cy,R,startA+(z.from/100)*Math.PI,startA+(z.to/100)*Math.PI);
-        ctx.strokeStyle=z.col;ctx.lineWidth=trackW;ctx.lineCap="butt";ctx.stroke();
-    });
-
-    // value arc
-    if(value>0){
-        const g=ctx.createLinearGradient(cx+Math.cos(startA)*R,cy+Math.sin(startA)*R,cx+Math.cos(valueA)*R,cy+Math.sin(valueA)*R);
-        g.addColorStop(0,"#00ffaa");g.addColorStop(.5,"#ffc857");g.addColorStop(1,"#ff4d4d");
-        ctx.beginPath();ctx.arc(cx,cy,R,startA,valueA);
-        ctx.strokeStyle=g;ctx.lineWidth=trackW;ctx.lineCap="round";ctx.stroke();
-    }
-
-    // needle
-    const nA=startA+(value/100)*Math.PI;
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(nA);
-    ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(R-8,0);ctx.lineTo(0,-6);ctx.closePath();
-    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=12;ctx.fill();ctx.restore();
-
-    // pivot
-    ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fillStyle="#08152a";ctx.shadowBlur=0;ctx.fill();
-    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=10;ctx.fill();
-    ctx.shadowBlur=0;
-
-    // value text
-    ctx.textAlign="center";ctx.textBaseline="alphabetic";
-    ctx.font="bold 28px 'Orbitron',sans-serif";
-    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=14;
-    ctx.fillText(value+"%",cx,cy-18);ctx.shadowBlur=0;
-
-    // label
-    const lbl=value<35?"LOW RISK":value<65?"MODERATE":"HIGH RISK";
-    ctx.font="600 9px 'Exo 2',sans-serif";ctx.fillStyle="rgba(0,200,255,0.5)";
-    ctx.fillText(lbl,cx,cy-5);
-}
-</script>
+  <script src="/static/app.js"></script>
 </body>
+
 </html>

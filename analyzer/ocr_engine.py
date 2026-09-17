@@ -11,9 +11,12 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # =========================
-# TESSERACT PATH
+# TESSERACT PATH & OCR CONSTANTS
 # Use env var for flexibility — works locally and on Render
 # =========================
+OCR_MIN_WORD_CONFIDENCE = 40
+OCR_FALLBACK_CONFIDENCE = 50
+
 if os.name == "nt":
     tesseract_path = os.getenv(
         "TESSERACT_PATH",
@@ -23,7 +26,7 @@ if os.name == "nt":
 
     # Force temp dir to user folder (avoids Windows permission errors)
     _tmp = os.path.join(
-        os.environ.get("USERPROFILE", tempfile.gettempdir()),
+        os.path.expanduser("~"),
         "AppData", "Local", "Temp"
     )
     os.makedirs(_tmp, exist_ok=True)
@@ -109,6 +112,7 @@ def preprocess_noisy(img_array):
 
 # =========================
 # CONFIDENCE-BASED TEXT EXTRACTION
+# Returns (text, avg_confidence) — real OCR confidence from Tesseract
 # =========================
 
 def extract_with_confidence(processed_img, config):
@@ -116,6 +120,8 @@ def extract_with_confidence(processed_img, config):
     Use pytesseract image_to_data to filter low-confidence words.
     Words with confidence < 40 are likely OCR garbage.
     Falls back to image_to_string if data extraction fails.
+
+    Returns: (extracted_text, avg_word_confidence 0-100)
     """
     try:
         data = pytesseract.image_to_data(
@@ -126,21 +132,28 @@ def extract_with_confidence(processed_img, config):
         )
 
         words = []
+        word_confidences = []
         for i, word in enumerate(data["text"]):
             word = word.strip()
             if not word:
                 continue
             conf = int(data["conf"][i])
-            if conf >= 40:   # only keep confident words
+            if conf >= OCR_MIN_WORD_CONFIDENCE:   # only keep confident words
                 words.append(word)
+                word_confidences.append(conf)
             else:
                 logger.debug(f"Dropped low-confidence word: '{word}' (conf={conf})")
 
-        return " ".join(words)
+        text = " ".join(words)
+        avg_conf = round(sum(word_confidences) / len(word_confidences)) if word_confidences else 30
+        return text, avg_conf
 
     except Exception as e:
         logger.warning(f"Confidence extraction failed, using fallback: {e}")
-        return pytesseract.image_to_string(processed_img, config=config, lang="eng")
+        fallback_text = pytesseract.image_to_string(processed_img, config=config, lang="eng")
+        # Fallback: estimate confidence from text quality
+        fallback_conf = OCR_FALLBACK_CONFIDENCE  # default medium confidence for fallback
+        return fallback_text, fallback_conf
 
 
 # =========================
@@ -187,6 +200,7 @@ def clean_ocr_text(text):
 
 # =========================
 # MAIN OCR FUNCTION
+# Returns (text, real_confidence)
 # =========================
 
 def extract_text_from_image(image_file):
@@ -197,6 +211,9 @@ def extract_text_from_image(image_file):
     - Confidence-based word filtering
     - Auto resize for optimal OCR
     - Second pass fallback if first pass gets little text
+    - Returns REAL word-level confidence from Tesseract
+
+    Returns: (cleaned_text, avg_word_confidence 0-100)
     """
     try:
         image_bytes = image_file.read()
@@ -226,7 +243,7 @@ def extract_text_from_image(image_file):
             config = r"--oem 3 --psm 6"
 
         # First pass — confidence filtered
-        raw_text = extract_with_confidence(processed, config)
+        raw_text, avg_conf = extract_with_confidence(processed, config)
         cleaned_text = clean_ocr_text(raw_text)
 
         # Second pass — try opposite strategy if first got little text
@@ -240,16 +257,17 @@ def extract_text_from_image(image_file):
                 processed2 = preprocess_clean(img)
                 config2 = r"--oem 3 --psm 3"
 
-            raw_text2 = extract_with_confidence(processed2, config2)
+            raw_text2, avg_conf2 = extract_with_confidence(processed2, config2)
             cleaned_text2 = clean_ocr_text(raw_text2)
 
-            if len(cleaned_text2) > len(cleaned_text):
+            if len(cleaned_text2) > len(cleaned_text) and avg_conf2 >= avg_conf * 0.7:
                 cleaned_text = cleaned_text2
+                avg_conf = avg_conf2
                 logger.info(f"Second OCR pass improved result: {len(cleaned_text)} chars")
 
-        logger.info(f"OCR extracted {len(cleaned_text)} characters after cleaning.")
-        return cleaned_text
+        logger.info(f"OCR extracted {len(cleaned_text)} characters (avg confidence: {avg_conf}%).")
+        return cleaned_text, avg_conf
 
     except Exception as e:
         logger.error(f"OCR error: {e}", exc_info=True)
-        return ""
+        return "", 0

@@ -3,11 +3,12 @@ services:
     name: mindshield-ai
     env: python
     buildCommand: |
-      apt-get install -y tesseract-ocr ffmpeg
+      apt-get update && apt-get install -y tesseract-ocr ffmpeg
       pip install -r requirements.txt
-      python manage.py migrate
+      pip install openai-whisper
       python manage.py collectstatic --noinput
     startCommand: gunicorn MindShieldAI.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /health/
     envVars:
       - key: SECRET_KEY
         generateValue: true

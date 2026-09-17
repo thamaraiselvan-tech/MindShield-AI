@@ -1,8 +1,8 @@
-from django.contrib import admin
 from django.urls import path
-from analyzer.views import analyze_multimodal
+from analyzer.views import analyze_multimodal, index, health_check
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('analyze/', analyze_multimodal),
+    path('', index, name='index'),
+    path('analyze/', analyze_multimodal, name='analyze'),
+    path('health/', health_check, name='health'),
 ]
