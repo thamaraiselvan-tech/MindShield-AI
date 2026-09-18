@@ -6,34 +6,35 @@
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
-  --bg-primary: #080b16;
-  --bg-secondary: #0d1224;
-  --bg-card: rgba(15, 20, 45, 0.6);
-  --bg-card-hover: rgba(20, 28, 58, 0.75);
-  --bg-input: rgba(10, 15, 35, 0.8);
-  --glass: rgba(255,255,255,0.03);
-  --glass-border: rgba(255,255,255,0.06);
-  --accent-cyan: #00d4ff;
-  --accent-purple: #7c3aed;
-  --accent-gradient: linear-gradient(135deg, #00d4ff, #7c3aed);
-  --accent-glow: 0 0 20px rgba(0,212,255,0.3);
-  --safe: #10b981;
-  --safe-bg: rgba(16,185,129,0.1);
-  --low: #3b82f6;
-  --low-bg: rgba(59,130,246,0.1);
-  --medium: #f59e0b;
-  --medium-bg: rgba(245,158,11,0.1);
-  --high: #ef4444;
-  --high-bg: rgba(239,68,68,0.1);
-  --critical: #dc2626;
-  --critical-bg: rgba(220,38,38,0.15);
-  --text-primary: #e2e8f0;
+  --bg-primary: #030712;
+  --bg-secondary: #090d1f;
+  --bg-card: rgba(13, 18, 42, 0.7);
+  --bg-card-hover: rgba(22, 30, 65, 0.85);
+  --bg-input: rgba(6, 10, 26, 0.85);
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(0, 240, 255, 0.15);
+  --accent-cyan: #00f0ff;
+  --accent-purple: #8b5cf6;
+  --accent-magenta: #ec4899;
+  --accent-gradient: linear-gradient(135deg, #00f0ff 0%, #8b5cf6 50%, #ec4899 100%);
+  --accent-glow: 0 0 25px rgba(0, 240, 255, 0.35);
+  --safe: #00ffaa;
+  --safe-bg: rgba(0, 255, 170, 0.1);
+  --low: #38bdf8;
+  --low-bg: rgba(56, 189, 248, 0.1);
+  --medium: #ffb700;
+  --medium-bg: rgba(255, 183, 0, 0.12);
+  --high: #ff4d4d;
+  --high-bg: rgba(255, 77, 77, 0.12);
+  --critical: #f43f5e;
+  --critical-bg: rgba(244, 63, 94, 0.18);
+  --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #475569;
-  --border: rgba(255,255,255,0.08);
-  --radius: 16px;
-  --radius-sm: 10px;
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --border: rgba(255, 255, 255, 0.1);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --transition: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html { scroll-behavior: smooth; }
@@ -44,19 +45,50 @@ body {
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
+  perspective: 1200px;
 }
 
-/* ── Background Effects ── */
+/* ── Background Canvas ── */
+#bgCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* ── Background Ambient Glow ── */
 body::before {
   content: '';
   position: fixed; inset: 0;
   background:
-    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(0,212,255,0.06), transparent),
-    radial-gradient(ellipse 600px 500px at 80% 80%, rgba(124,58,237,0.05), transparent);
+    radial-gradient(ellipse 900px 700px at 15% 15%, rgba(0, 240, 255, 0.08), transparent),
+    radial-gradient(ellipse 700px 600px at 85% 85%, rgba(139, 92, 246, 0.08), transparent);
   pointer-events: none; z-index: 0;
 }
 
-.container { max-width: 860px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+.container { max-width: 890px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+/* ── 3D Glassmorphism Cards ── */
+.input-panel, .section-card, .verdict-card {
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.input-panel:hover, .section-card:hover, .verdict-card:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 20px 40px -15px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.gauge-wrap-3d {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  filter: drop-shadow(0 8px 24px rgba(0, 240, 255, 0.2));
+}
 
 /* ================================================
    HEADER
@@ -95,6 +127,30 @@ header {
   font-size: 0.95rem;
   font-weight: 400;
   margin-top: 4px;
+}
+.hero-quote-banner {
+  margin: 12px auto 6px;
+  max-width: 580px;
+  padding: 8px 20px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  animation: quoteGlow 4s ease-in-out infinite alternate;
+}
+.hero-quote-banner .quote-bold {
+  font-weight: 800;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+@keyframes quoteGlow {
+  0% { border-color: rgba(0, 240, 255, 0.2); box-shadow: 0 0 15px rgba(0, 240, 255, 0.1); }
+  50% { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 0 25px rgba(139, 92, 246, 0.25); }
+  100% { border-color: rgba(236, 72, 153, 0.3); box-shadow: 0 0 20px rgba(236, 72, 153, 0.15); }
 }
 .privacy-badge-header {
   display: inline-flex;

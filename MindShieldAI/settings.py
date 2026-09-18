@@ -24,6 +24,8 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 # APPS (minimal — privacy-first, no admin/auth)
 # =========================
 INSTALLED_APPS = [
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",

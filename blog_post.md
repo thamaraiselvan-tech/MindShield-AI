@@ -2,6 +2,8 @@
 
 *Submission for the Gen AI Academy APAC "Meet the Builders" Program*
 
+> **"Emotions beat logic. But that emotion should not become a weakness."**
+
 In an era dominated by instant messaging, phishing emails, and social engineering, psychological manipulation has become the primary vector for cyber fraud and misinformation. Tactics like **gaslighting, artificial urgency, fake authority, and emotional guilt-tripping** are engineered to bypass logical thinking and force immediate action.
 
 To combat this, we built **MindShield AI** — a privacy-first, multimodal system designed to analyze digital communications and explain manipulation tactics in simple, layperson terms. Today, we are excited to showcase the massive upgrade of MindShield AI into a **production-grade Multi-Agent System** powered by **Google ADK (Agent Development Kit)** and **Gemini 2.5 Flash Lite**.

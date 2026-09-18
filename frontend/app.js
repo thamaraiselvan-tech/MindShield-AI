@@ -471,34 +471,251 @@
   /* ================================================
      GAUGE ANIMATION
      ================================================ */
-  function animateGauge(score, color) {
-    const circle = $("#gaugeFill");
-    const numberEl = $("#gaugeNumber");
-    const r = 52;
-    const c = 2 * Math.PI * r;
-    circle.setAttribute("r", r);
-    circle.style.strokeDasharray = c;
-    circle.style.stroke = color;
+  /* ================================================
+     3D CANVAS RISK GAUGE ANIMATION
+     ================================================ */
+  let gaugeAnimFrame = null;
 
-    /* Animate from 0 */
-    const target = c - (score / 100) * c;
-    circle.style.strokeDashoffset = c;
-    numberEl.textContent = "0";
-    numberEl.style.color = color;
+  function animateGauge(targetScore, colorStr) {
+    const canvas = document.getElementById("riskGaugeCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
 
-    requestAnimationFrame(() => {
-      circle.style.strokeDashoffset = target;
+    let currentVal = 0;
+    const startTime = performance.now();
+    const duration = 800; // ms
+
+    if (gaugeAnimFrame) cancelAnimationFrame(gaugeAnimFrame);
+
+    function renderFrame(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // Ease out cubic
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      currentVal = targetScore * easedProgress;
+
+      drawGaugeCanvas(ctx, W, H, currentVal, targetScore);
+
+      if (progress < 1) {
+        gaugeAnimFrame = requestAnimationFrame(renderFrame);
+      }
+    }
+
+    gaugeAnimFrame = requestAnimationFrame(renderFrame);
+  }
+
+  function drawGaugeCanvas(ctx, W, H, val, finalVal) {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H - 24;
+    const R = 85;
+    const trackW = 14;
+    const startA = Math.PI;
+    const endA = 2 * Math.PI;
+    const valA = startA + (val / 100) * Math.PI;
+
+    // Color determination
+    const col = val < 35 ? "#00ffaa" : val < 65 ? "#ffb700" : "#ff4d4d";
+
+    // ── Tick Marks & Labels ──
+    for (let i = 0; i <= 10; i++) {
+      const a = startA + (i / 10) * Math.PI;
+      const isMajor = i % 2 === 0;
+      const r1 = R + trackW + 4;
+      const r2 = r1 + (isMajor ? 8 : 4);
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+      ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+      ctx.strokeStyle = isMajor ? "rgba(0, 240, 255, 0.6)" : "rgba(0, 240, 255, 0.25)";
+      ctx.lineWidth = isMajor ? 2 : 1;
+      ctx.stroke();
+    }
+
+    // Tick numerical labels
+    const labels = [0, 25, 50, 75, 100];
+    ctx.font = "600 9px 'Exo 2', sans-serif";
+    ctx.fillStyle = "rgba(0, 240, 255, 0.5)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    labels.forEach(pct => {
+      const a = startA + (pct / 100) * Math.PI;
+      const lr = R + trackW + 18;
+      ctx.fillText(pct.toString(), cx + Math.cos(a) * lr, cy + Math.sin(a) * lr);
     });
 
-    /* Count up number */
-    let current = 0;
-    const step = Math.max(1, Math.floor(score / 40));
-    const interval = setInterval(() => {
-      current += step;
-      if (current >= score) { current = score; clearInterval(interval); }
-      numberEl.textContent = current;
-    }, 25);
+    // ── Outer Background Arc ──
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, startA, endA);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+    ctx.lineWidth = trackW;
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    // ── Active Colored Arc ──
+    if (val > 0) {
+      const grad = ctx.createLinearGradient(
+        cx + Math.cos(startA) * R, cy + Math.sin(startA) * R,
+        cx + Math.cos(valA) * R, cy + Math.sin(valA) * R
+      );
+      grad.addColorStop(0, "#00ffaa");
+      grad.addColorStop(0.5, "#ffb700");
+      grad.addColorStop(1, "#ff4d4d");
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startA, valA);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = trackW;
+      ctx.lineCap = "round";
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // ── Animated Metallic Needle ──
+    const nA = startA + (val / 100) * Math.PI;
+    const nLen = R - 12;
+    const nBase = 10;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(nA);
+    ctx.beginPath();
+    ctx.moveTo(0, -nBase / 2);
+    ctx.lineTo(nLen, 0);
+    ctx.lineTo(0, nBase / 2);
+    ctx.closePath();
+    ctx.fillStyle = col;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.restore();
+
+    // ── Pivot Center ──
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "#070c1e";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // ── Center Number Score ──
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = "800 24px 'Orbitron', sans-serif";
+    ctx.fillStyle = col;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 16;
+    ctx.fillText(Math.round(val) + "%", cx, cy - 20);
+    ctx.shadowBlur = 0;
+
+    // ── Sub-Label ──
+    const riskTxt = finalVal < 15 ? "SAFE" : finalVal < 35 ? "LOW RISK" : finalVal < 60 ? "MODERATE" : finalVal < 80 ? "HIGH RISK" : "CRITICAL";
+    ctx.font = "700 9px 'Exo 2', sans-serif";
+    ctx.fillStyle = "rgba(0, 240, 255, 0.55)";
+    ctx.letterSpacing = "1.5px";
+    ctx.fillText(riskTxt, cx, cy - 6);
   }
+
+  /* ================================================
+     AMBIENT CYBER BACKGROUND PARTICLES CANVAS
+     ================================================ */
+  function initBgCanvas() {
+    const canvas = document.getElementById("bgCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    });
+
+    const particles = Array.from({ length: 45 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 2 + 1,
+      alpha: Math.random() * 0.5 + 0.2
+    }));
+
+    function loopBg() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw grid points & connections
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha})`;
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 130) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(loopBg);
+    }
+
+    loopBg();
+  }
+
+  /* ================================================
+     PARALLAX 3D CARD TILT EFFECT
+     ================================================ */
+  function init3DTilt() {
+    const cards = document.querySelectorAll(".glass-tilt, .input-panel, .section-card");
+
+    cards.forEach(card => {
+      card.addEventListener("mousemove", e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+
+        const rx = (-y / rect.height) * 8; // deg
+        const ry = (x / rect.width) * 8;  // deg
+
+        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.01, 1.01, 1.01)`;
+      });
+
+      card.addEventListener("mouseleave", () => {
+        card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+      });
+    });
+  }
+
+  // Initialize interactive features on load
+  document.addEventListener("DOMContentLoaded", () => {
+    initBgCanvas();
+    init3DTilt();
+  });
 
   /* ================================================
      HELPERS
@@ -514,21 +731,21 @@
 
   function getLevelColor(level) {
     const map = {
-      "Safe":             { main: "var(--safe)",     bg: "var(--safe-bg)",     border: "rgba(16,185,129,0.2)" },
-      "Low":              { main: "var(--low)",      bg: "var(--low-bg)",      border: "rgba(59,130,246,0.2)" },
-      "Medium":           { main: "var(--medium)",   bg: "var(--medium-bg)",   border: "rgba(245,158,11,0.2)" },
-      "High":             { main: "var(--high)",     bg: "var(--high-bg)",     border: "rgba(239,68,68,0.2)" },
-      "Critical":         { main: "var(--critical)", bg: "var(--critical-bg)", border: "rgba(220,38,38,0.25)" },
-      "No Significant Risk": { main: "var(--safe)",  bg: "var(--safe-bg)",     border: "rgba(16,185,129,0.2)" },
+      "Safe":             { main: "var(--safe)",     bg: "var(--safe-bg)",     border: "rgba(0, 255, 170, 0.25)" },
+      "Low":              { main: "var(--low)",      bg: "var(--low-bg)",      border: "rgba(56, 189, 248, 0.25)" },
+      "Medium":           { main: "var(--medium)",   bg: "var(--medium-bg)",   border: "rgba(255, 183, 0, 0.25)" },
+      "High":             { main: "var(--high)",     bg: "var(--high-bg)",     border: "rgba(255, 77, 77, 0.25)" },
+      "Critical":         { main: "var(--critical)", bg: "var(--critical-bg)", border: "rgba(244, 63, 94, 0.3)" },
+      "No Significant Risk": { main: "var(--safe)",  bg: "var(--safe-bg)",     border: "rgba(0, 255, 170, 0.25)" },
     };
     return map[level] || map["Safe"];
   }
 
   function getFlagIcon(flag) {
     const fl = flag.toLowerCase();
-    if (fl.includes("trust") || fl.includes("safe")) return '<svg width="14" height="14" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>';
-    if (fl.includes("fear") || fl.includes("threat") || fl.includes("danger")) return '<svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>';
-    return '<svg width="14" height="14" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+    if (fl.includes("trust") || fl.includes("safe")) return '<svg width="14" height="14" fill="none" stroke="#00ffaa" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>';
+    if (fl.includes("fear") || fl.includes("threat") || fl.includes("danger")) return '<svg width="14" height="14" fill="none" stroke="#ff4d4d" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>';
+    return '<svg width="14" height="14" fill="none" stroke="#ffb700" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
   }
 
   function esc(s) {
@@ -538,3 +755,4 @@
     return d.innerHTML;
   }
 })();
+
